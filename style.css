@@ -1,0 +1,677 @@
+/* ==========================================================================
+   VARIABLES DE COLOR (Paleta Atrio Moderno - Formal, Suave y Moderna)
+   ========================================================================== */
+:root {
+    --fondo-pantalla: #f1f5f9;         /* Gris pizarra claro neutro para descansar la vista */
+    --fondo-contenedor: #ffffff;       /* Blanco puro para las secciones principales */
+    --fondo-tarjeta: #fdfbf7;          /* Crema/Off-white sumamente suave para leer letras y acordes */
+    
+    --texto-principal: #0f172a;       /* Azul de medianoche oscuro (evita fatiga) */
+    --texto-secundario: #0a0a0a;      /* Gris azulado para etiquetas y descripciones */
+    --texto-lectura: #111111;         /* Negro intenso para mejorar la legibilidad de las letras */
+    
+    --azul-identidad: #03126c;         /* Azul institucional profundo para números y marcas */
+    --azul-hover: #1e293b;             /* Azul grisáceo para los estados interactivos */
+    --acorde-resaltado: #b91c1c;       /* Rojo vino/ladrillo suave para romper el brillo sin cegar */
+    
+    --borde-tarjeta: #e2e8f0;          /* Gris claro suave para divisiones y contornos */
+}
+
+/* ==========================================================================
+   ESTILOS GENERALES
+   ========================================================================== */
+body {
+    background-color: var(--fondo-pantalla);
+    color: var(--texto-principal);
+    font-family: 'Segoe UI', Arial, sans-serif; 
+    margin: 0;
+    padding: 0;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+    min-height: 100vh;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* ==========================================================================
+   ESTILOS PARA EL HEADER Y NAVEGACIÓN (MENÚ HAMBURGUESA)
+   ========================================================================== */
+.header {
+    background-color: rgba(15, 23, 42, 0.92); 
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.nav-hamburguesa {
+    background-color: #1e293b; 
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    border-radius: 8px;
+}
+
+.menu-checkbox {
+    display: none;
+}
+
+.menu-icono {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.menu-icono span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: #ffffff;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.menu-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    width: 100%;
+    background-color: #1e293b;
+    z-index: 100;
+    
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.menu-links li {
+    text-align: center;
+}
+
+.menu-links a {
+    display: block;
+    padding: 15px 0;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: background 0.2s ease;
+}
+
+.menu-links a:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.menu-checkbox:checked ~ .menu-links {
+    max-height: 300px;
+}
+
+.menu-checkbox:checked ~ .menu-icono span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 6px);
+}
+
+.menu-checkbox:checked ~ .menu-icono span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-checkbox:checked ~ .menu-icono span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -6px);
+}
+
+/* ==========================================================================
+   ESTILOS PARA CONTENEDORES PRINCIPALES E INICIO
+   ========================================================================== */
+.wellcome {
+    gap: 20px;
+    padding: 20px;
+    background-color: var(--fondo-contenedor);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 10px;
+    width: 100%;
+    max-width: 500px;
+    min-height: 200px;
+    margin: 20px auto;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+}
+
+.repertorio {
+    padding: 25px;
+    background-color: var(--fondo-contenedor);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 1200px;
+    min-height: 300px;
+    margin: 20px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+}
+
+#titulo-lista {
+    margin-bottom: 20px;
+    color: var(--texto-principal);
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+#buscador {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 15px;
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 25px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+#buscador:focus {
+    border-color: var(--azul-identidad);
+}
+
+/* Botones estándar de la interfaz */
+.btn {
+    margin-top: 20px;
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: var(--azul-identidad);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    text-align: center;
+}
+
+.btn:hover {
+    background-color: var(--azul-hover);
+    transform: scale(1.02);
+}
+
+/* Botón dinámico del Administrador de Repertorio dentro del Modal */
+#btn-toggle-repertorio {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: filter 0.2s ease, transform 0.1s ease;
+}
+
+#btn-toggle-repertorio:hover {
+    filter: brightness(0.9);
+}
+
+#btn-toggle-repertorio:active {
+    transform: scale(0.98);
+}
+
+#btn-toggle-repertorio:disabled {
+    background-color: var(--texto-secundario) !important;
+    cursor: not-allowed;
+    filter: none;
+}
+
+/* ==========================================================================
+   ESTRUCTURAS DINÁMICAS (CARTAS PARA REPERTORIO / FILAS PARA CANCIONERO)
+   ========================================================================== */
+#contenedor-tarjetas {
+    width: 100%;
+    padding: 5px 0;
+    box-sizing: border-box;
+}
+
+/* MODO 1: Cuando muestra el Repertorio (Formato Cuadrícula de Cartas) */
+#contenedor-tarjetas.modo-cartas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* MODO 2: Cuando muestra el Cancionero General (Formato Filas Acumuladas) */
+#contenedor-tarjetas.modo-filas {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   DISEÑO A: Estilo Carta Individual (Para el Repertorio Semanal)
+   -------------------------------------------------------------------------- */
+.tarjeta-cancion {
+    background-color: var(--fondo-tarjeta);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.tarjeta-cancion:hover {
+    transform: translateY(-4px);
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06);
+}
+
+.tarjeta-cancion h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--texto-principal);
+    padding-right: 55px;
+    line-height: 1.3;
+}
+
+.tarjeta-cancion p {
+    margin: 4px 0;
+    color: var(--texto-secundario);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tarjeta-cancion .badge-tono-tarjeta {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background-color: var(--azul-identidad);
+    color: #ffffff;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    min-width: 24px;
+    text-align: center;
+}
+
+.tarjeta-pie {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--borde-tarjeta);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   DISEÑO B: Estilo Fila Horizontal (Para el Cancionero General)
+   -------------------------------------------------------------------------- */
+.fila-cancion {
+    background-color: var(--fondo-tarjeta);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: grid;
+    grid-template-columns: 75px 2.5fr 1fr 1.2fr auto;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.fila-cancion:hover {
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+    box-shadow: 0 6px 12px -2px rgba(15, 23, 42, 0.04);
+    background-color: #fafafa;
+}
+
+.fila-cancion .badge-tono-tarjeta {
+    position: static; 
+    background-color: var(--azul-identidad);
+    color: #ffffff;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    min-width: 45px;
+    text-align: center;
+}
+
+.col-tono { display: flex; justify-content: flex-start; }
+.col-info-cancion { display: flex; flex-direction: column; gap: 2px; }
+.col-info-cancion h3 { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--texto-principal); }
+.col-info-cancion p { margin: 0; color: var(--texto-secundario); font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
+.col-tipo { display: flex; align-items: center; }
+.col-director { font-size: 0.9rem; color: var(--texto-secundario); display: flex; align-items: center; gap: 8px; }
+.col-director i { color: #94a3b8; width: 14px; }
+.col-acciones { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+
+/* Elementos comunes internos */
+.badge-tipo {
+    color: var(--texto-secundario);
+    font-weight: 600;
+    background: #e2e8f0;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+}
+
+/* ==========================================================================
+   VENTANA FLOTANTE (MODAL INTERACTIVO)
+   ========================================================================== */
+.modal-fondo, #vista-cancion {
+    display: none;             
+    position: fixed;           
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6); 
+    z-index: 9999;             
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    backdrop-filter: blur(4px); 
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.modal-contenido {
+    background-color: var(--fondo-contenedor);
+    border: 1px solid var(--borde-tarjeta);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;          
+    border-radius: 16px;
+    padding: 25px;
+    position: relative;
+    overflow-y: auto;          
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    animation: emergerModal 0.3s ease-out;
+}
+
+@keyframes emergerModal {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.btn-cerrar {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 2rem;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--texto-secundario);
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.btn-cerrar:hover { 
+    color: var(--acorde-resaltado); 
+}
+
+/* Sección de controles del transportador */
+.controles-vista-cancion {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+    margin-bottom: 10px;
+}
+
+.btn-vista-cancion {
+    border: 1px solid var(--borde-tarjeta);
+    background-color: #ffffff;
+    color: var(--texto-principal);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-vista-cancion:hover {
+    border-color: var(--azul-identidad);
+    color: var(--azul-identidad);
+}
+
+.btn-vista-cancion.active {
+    background-color: var(--azul-identidad);
+    border-color: var(--azul-identidad);
+    color: #ffffff;
+}
+
+.controles-tono {
+    margin-top: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px dashed var(--borde-tarjeta);
+    padding-bottom: 15px;
+}
+
+.controles-tono span {
+    font-weight: bold;
+    color: var(--texto-secundario);
+}
+
+.controles-tono button {
+    padding: 6px 14px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: 1px solid var(--borde-tarjeta);
+    background-color: #ffffff;
+    color: var(--texto-principal);
+    font-weight: bold;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.controles-tono button:hover {
+    background-color: var(--fondo-pantalla);
+    border-color: var(--texto-secundario);
+}
+
+/* Cuerpo de la letra y renderizado de acordes */
+#cancion-cuerpo {
+    white-space: pre-wrap;     
+    font-family: 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.12rem;
+    line-height: 1.95;
+    letter-spacing: 0.02em;
+    font-weight: 500;
+    text-rendering: optimizeLegibility;
+    color: #111111 !important;
+    margin-top: 20px;
+    background-color: #fbfcfd;
+    padding: 18px;
+    border-radius: 10px;
+    border: 1px solid var(--borde-tarjeta);
+}
+
+#cancion-cuerpo.modo-acordes {
+    font-family: 'Courier New', monospace;
+    line-height: 1.75;
+    letter-spacing: 0;
+    text-rendering: geometricPrecision;
+}
+
+.acorde-resaltado {
+    color: var(--acorde-resaltado) !important;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+#tono-actual {
+    background-color: var(--azul-identidad);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1.05rem;
+    display: inline-block;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* Botones rápidos en las tarjetas y filas */
+.btn-tarjeta-video, .btn-tarjeta-repertorio, .btn-tarjeta-ver {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, transform 0.1s;
+}
+.btn-tarjeta-video:hover,
+.btn-tarjeta-ver:hover { background-color: #f1f5f9; transform: scale(1.05); }
+
+.btn-tarjeta-repertorio.agregar { color: #10b981; }
+.btn-tarjeta-repertorio.agregar:hover { background-color: #e6f4ea; transform: scale(1.05); }
+.btn-tarjeta-repertorio.quitar { color: #dc2626; }
+.btn-tarjeta-repertorio.quitar:hover { background-color: #fce8e6; transform: scale(1.05); }
+
+.btn-tarjeta-ver {
+    color: var(--texto-principal);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 8px 10px;
+    background: rgba(15, 23, 42, 0.05);
+    border-radius: 8px;
+}
+
+.btn-tarjeta-ver span {
+    margin-left: 4px;
+}
+
+.fila-vista-botones {
+    display: flex;
+    gap: 8px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+/* Contenedor flexible buscador */
+.buscador-contenedor {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+#buscador {
+    margin-bottom: 0 !important;
+    flex: 1;
+}
+
+.btn-agregar-nueva {
+    margin-top: 0 !important;
+    background-color: #10b981 !important; 
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 42px; 
+    box-sizing: border-box;
+}
+
+.btn-agregar-nueva:hover { background-color: #059669 !important; }
+
+/* Estilos Formulario Modal */
+.formulario-modal { text-align: left !important; max-width: 500px; width: 90%; }
+.grupo-campo { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.grupo-campo label { font-weight: bold; font-size: 0.9rem; color: var(--texto-principal, #334155); }
+.grupo-campo input, .grupo-campo select, .grupo-campo textarea {
+    width: 100%; padding: 10px; border: 1px solid var(--borde-tarjeta, #cbd5e1);
+    border-radius: 6px; background-color: #ffffff; color: #0f172a; font-size: 0.95rem; box-sizing: border-box;
+}
+.grupo-campo textarea { font-family: 'Courier New', monospace; resize: vertical; }
+.fila-doble { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn-enviar-form {
+    width: 100%; margin-top: 10px; background-color: #10b981 !important; 
+    color: white; padding: 12px; font-size: 1rem; font-weight: bold; border: none;
+    border-radius: 6px; cursor: pointer; transition: background-color 0.2s;
+}
+.btn-enviar-form:hover { background-color: #059669 !important; }
+
+/* ==========================================================================
+   RESPONSIVIDAD (PANTALLAS DE CELULARES Y TABLETS)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .fila-cancion {
+        grid-template-columns: 60px 1fr auto;
+        gap: 10px;
+        padding: 10px 14px;
+    }
+    .col-tipo, .col-director { display: none; }
+    .col-info-cancion h3 { font-size: 1.05rem; }
+    
+    #contenedor-tarjetas.modo-cartas {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-tarjeta-ver span {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .buscador-contenedor { flex-direction: column; gap: 10px; }
+    .btn-agregar-nueva { width: 100%; justify-content: center; }
+    .wellcome { width: 100% !important; margin: 10px 0; }
+    .repertorio { width: 100% !important; padding: 15px; }
+    .modal-contenido { padding: 15px; max-height: 95vh; }
+    #cancion-cuerpo { font-size: 0.95rem; padding: 10px; }
+}

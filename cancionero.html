@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDF - Repertorio y Canciones</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="main">
+    <header class="header">
+        <h1>GDF</h1>
+        <nav class="nav-hamburguesa">
+            <input type="checkbox" id="menu-toggle" class="menu-checkbox">
+            <label for="menu-toggle" class="menu-icono">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+            <ul class="menu-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="#" onclick="mostrarSeccion('repertorio')" id="link-menu-repertorio">Repertorio de la Semana</a></li>
+                <li><a href="#" onclick="mostrarSeccion('canciones')" id="link-menu-canciones">Todas las Canciones</a></li>
+                <li><a href="#" onclick="abrirAdminLogin()" id="link-admin">Admin</a></li>
+                <li><a href="#" data-admin-only="true" onclick="abrirModalNuevaCancion()" style="color: #fbbf24; font-weight: bold; display: none;"><i class="fa-solid fa-plus"></i> Añadir Canción</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div style="width: 100%; text-align: left; margin-bottom: 15px; padding-left: 10px;">
+            <a href="index.html" style="text-decoration: none; color: var(--texto-secundario); font-weight: bold; display: inline-flex; align-items: center; gap: 5px; font-size: 0.95rem;">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Menú Principal
+            </a>
+        </div>
+
+        <!-- Modal de login de administrador -->
+        <div id="modal-login-admin" class="modal-fondo" style="display: none;">
+            <div class="modal-contenido formulario-modal">
+                <button class="btn-cerrar" onclick="cerrarAdminLogin()">&times;</button>
+                <h3>Ingresar como Administrador</h3>
+                <form onsubmit="intentarLogin(event)">
+                    <div class="grupo-campo">
+                        <label>Contraseña</label>
+                        <input id="admin-password-input" type="password" required placeholder="Ingresa la contraseña de administrador">
+                    </div>
+                    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+                        <button type="button" class="btn" onclick="cerrarAdminLogin()">Cancelar</button>
+                        <button type="submit" class="btn" style="background-color:#2563eb; color:white;">Entrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="vista-listas" class="seccion-vista repertorio">
+            <h2 id="titulo-lista" style="text-align: center; margin-bottom: 20px; color: var(--texto-principal);">Cargando canciones...</h2>
+            
+            <div class="buscador-contenedor">
+                <input type="text" id="buscador" oninput="filtrarCanciones()" placeholder="Buscar canción por título o artista...">
+                <button id="btn-nueva-cancion" class="btn btn-agregar-nueva" data-admin-only="true" onclick="abrirModalNuevaCancion()" style="display: none;">
+                    <i class="fa-solid fa-plus"></i> Nueva Canción
+                </button>
+            </div>
+            
+            <div id="contenedor-tarjetas" class="contenedor-tarjetas-grid"></div>
+        </div>
+
+        <div id="vista-cancion" class="modal-fondo" style="display: none;">
+            <div class="modal-contenido">
+                <button class="btn-cerrar" onclick="regresarALista()">&times;</button>
+                <h2 id="cancion-titulo">Título</h2>
+                <h3 id="cancion-artista" style="color: var(--texto-secundario); margin-top: -5px; font-weight: 600;">Artista</h3>
+
+                <div class="controles-vista-cancion" role="group" aria-label="Vista de la canción">
+                    <button type="button" class="btn-vista-cancion active" data-vista="letras" onclick="cambiarVistaCancion('letras')">Letras</button>
+                    <button type="button" class="btn-vista-cancion" data-vista="acordes" onclick="cambiarVistaCancion('acordes')">Acordes</button>
+                </div>
+                
+                <div class="controles-tono" id="controles-tono-bloque">
+                    <span>Cambiar Tono:</span>
+                    <button onclick="cambiarTono(-1)">- ½ Tono</button>
+                    <span id="tono-actual" class="badge-tono">C</span>
+                    <button onclick="cambiarTono(1)">+ ½ Tono</button>
+                </div>
+                
+                <pre id="cancion-cuerpo"></pre>
+            </div>
+        </div>
+
+        <div id="modal-nueva-cancion" class="modal-fondo" style="display: none;">
+            <div class="modal-contenido formulario-modal">
+                <button class="btn-cerrar" onclick="cerrarModalNuevaCancion()">&times;</button>
+                <h2>Añadir Nueva Canción</h2>
+                <p style="color: var(--texto-secundario); margin-bottom: 20px;">Completa los datos para guardarla en Google Sheets</p>
+                
+                <form id="form-nueva-cancion" onsubmit="guardarNuevaCancion(event)">
+                    <div class="grupo-campo">
+                        <label>Título de la Canción *</label>
+                        <input type="text" id="nuevo-titulo" required placeholder="Ej: Cuan Grande es Él">
+                    </div>
+                    
+                    <div class="grupo-campo">
+                        <label>Artista / Ministerio *</label>
+                        <input type="text" id="nuevo-artista" required placeholder="Ej: En Espíritu y en Verdad">
+                    </div>
+                    
+                    <div class="fila-doble">
+                        <div class="grupo-campo">
+                            <label>Tono Original *</label>
+                            <input type="text" id="nuevo-tono" required placeholder="Ej: Em(G) o G">
+                        </div>
+                        <div class="grupo-campo">
+                            <label>Tipo *</label>
+                            <input type="text" id="nuevo-tipo" required placeholder="Ej: Alabanza" list="tipos-list">
+                            <datalist id="tipos-list">
+                                <option value="Alabanza">
+                                <option value="Adoración">
+                                <option value="Especial">
+                            </datalist>
+                        </div>
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label>Director Asignado</label>
+                        <input type="text" id="nuevo-director" placeholder="Ej: Carlos Mendoza">
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label>Letra con Acordes [Entre Corchetes]</label>
+                        <textarea id="nueva-letra" rows="8" placeholder="Ej: [G]Señor mi [C]Dios, al con[G]templar los [D]cielos..."></textarea>
+                    </div>
+                    
+                    <button type="submit" id="btn-guardar-nueva" class="btn btn-enviar-form">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Google Sheets
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal separado para editar canciones -->
+        <div id="modal-editar-cancion" class="modal-fondo" style="display: none;">
+            <div class="modal-contenido formulario-modal">
+                <button class="btn-cerrar" onclick="cerrarModalEditarCancion()">&times;</button>
+                <h2>Editar Canción</h2>
+                <p style="color: var(--texto-secundario); margin-bottom: 20px;">Modifica los datos de la canción en Google Sheets</p>
+                
+                <form id="form-editar-cancion" onsubmit="guardarEditarCancion(event)">
+                    <div class="grupo-campo">
+                        <label>Título de la Canción *</label>
+                        <input type="text" id="editar-titulo" required placeholder="Ej: Cuan Grande es Él">
+                    </div>
+                    
+                    <div class="grupo-campo">
+                        <label>Artista / Ministerio *</label>
+                        <input type="text" id="editar-artista" required placeholder="Ej: En Espíritu y en Verdad">
+                    </div>
+                    
+                    <div class="fila-doble">
+                        <div class="grupo-campo">
+                            <label>Tono Original *</label>
+                            <input type="text" id="editar-tono" required placeholder="Ej: Em(G) o G">
+                        </div>
+                        <div class="grupo-campo">
+                            <label>Tipo *</label>
+                            <input type="text" id="editar-tipo" required placeholder="Ej: Alabanza" list="tipos-list-editar">
+                            <datalist id="tipos-list-editar">
+                                <option value="Alabanza">
+                                <option value="Adoración">
+                                <option value="Especial">
+                            </datalist>
+                        </div>
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label>Director Asignado</label>
+                        <input type="text" id="editar-director" placeholder="Ej: Carlos Mendoza">
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label>Enlace de Video (YouTube / Drive)</label>
+                        <input type="url" id="editar-video" placeholder="https://youtube.com/...">
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label>Letra con Acordes [Entre Corchetes]</label>
+                        <textarea id="editar-letra" rows="8" placeholder="Ej: [G]Señor mi [C]Dios, al con[G]templar los [D]cielos..."></textarea>
+                    </div>
+                    
+                    <button type="submit" id="btn-guardar-editar" class="btn btn-enviar-form">
+                        <i class="fa-solid fa-pen"></i> Actualizar Canción
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const parametros = new URLSearchParams(window.location.search);
+            const vistaDeseada = parametros.get('vista') || 'canciones';
+
+            document.getElementById('link-menu-repertorio').classList.remove('active');
+            document.getElementById('link-menu-canciones').classList.remove('active');
+
+            if (vistaDeseada === 'repertorio') {
+                document.getElementById('link-menu-repertorio').classList.add('active');
+                mostrarSeccion('repertorio');
+            } else {
+                document.getElementById('link-menu-canciones').classList.add('active');
+                mostrarSeccion('canciones');
+            }
+            if (typeof actualizarUIAdmin === 'function') actualizarUIAdmin();
+        });
+    </script>
+</body>
+</html>

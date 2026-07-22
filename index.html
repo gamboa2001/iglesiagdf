@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDF - Ministerio de Alabanza</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="main">
+    <header class="header">
+        <h1>GDF</h1>
+        <nav class="nav-hamburguesa">
+            <input type="checkbox" id="menu-toggle" class="menu-checkbox">
+            <label for="menu-toggle" class="menu-icono">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+            <ul class="menu-links">
+                <li><a href="index.html" class="active">Inicio</a></li>
+                <li><a href="cancionero.html?vista=repertorio">Repertorio de la Semana</a></li>
+                <li><a href="cancionero.html?vista=canciones">Todas las Canciones</a></li>
+                <li><a href="nueva-cancion.html" data-admin-only="true" style="color: #fbbf24; font-weight: bold; display: none;"><i class="fa-solid fa-plus"></i> Añadir Canción</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div id="vista-inicio" class="seccion-vista wellcome">
+            <h2>Bienvenidos a GDF</h2>
+            <p>Repositorio oficial de letras y acordes para el ministerio de alabanza. Selecciona una opción en el menú o accede directamente a los paneles inferiores.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; margin-top: 20px;">
+                <a href="cancionero.html?vista=repertorio" class="btn" style="width: 85%; max-width: 280px; text-decoration: none; display: inline-block; text-align: center; box-sizing: border-box;">
+                    <i class="fa-solid fa-layer-group"></i> Ver Repertorio Semanal
+                </a>
+                
+                <a href="cancionero.html?vista=canciones" class="btn" style="background-color: #2563eb; width: 85%; max-width: 280px; text-decoration: none; display: inline-block; text-align: center; box-sizing: border-box;">
+                    <i class="fa-solid fa-music"></i> Todas las Canciones
+                </a>
+
+                <a href="nueva-cancion.html" id="btn-add-index" class="btn" data-admin-only="true" style="background-color: #d97706; width: 85%; max-width: 280px; text-decoration: none; display: none; text-align: center; box-sizing: border-box;">
+                    <i class="fa-solid fa-plus"></i> Añadir Nueva Canción
+                </a>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
