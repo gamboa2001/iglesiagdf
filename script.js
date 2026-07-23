@@ -13,6 +13,7 @@ const notas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 // ADMIN: contraseña por defecto (cámbiala en producción)
 const ADMIN_PASSWORD = 'admin123';
+const EVENTOS_ESPECIALES_KEY = 'gdf_eventosEspeciales';
 
 function isAdmin() {
     return localStorage.getItem('gdf_isAdmin') === 'true';
@@ -870,6 +871,7 @@ window.addEventListener('click', (event) => {
 // Inicializar estado admin al cargar cualquier página que incluya este script
 window.addEventListener('DOMContentLoaded', () => {
     if (typeof actualizarUIAdmin === 'function') actualizarUIAdmin();
+    if (typeof inicializarEventosEspeciales === 'function') inicializarEventosEspeciales();
 });
 
 /* ==========================================================================
@@ -878,20 +880,80 @@ window.addEventListener('DOMContentLoaded', () => {
    Los datos se persisten en localStorage bajo la clave 'gdf_eventosEspeciales'.
    ========================================================================== */
 
-function obtenerEventosEspeciales() {
+function inicializarEventosEspeciales() {
     try {
-        const raw = localStorage.getItem('gdf_eventosEspeciales');
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
+        const raw = localStorage.getItem(EVENTOS_ESPECIALES_KEY);
+        if (raw === null) {
+            localStorage.setItem(EVENTOS_ESPECIALES_KEY, JSON.stringify([]));
+        }
     } catch (e) {
+        console.warn('No se pudo inicializar eventos especiales en localStorage.', e);
+        try {
+            const rawSession = sessionStorage.getItem(EVENTOS_ESPECIALES_KEY);
+            if (rawSession === null) {
+                sessionStorage.setItem(EVENTOS_ESPECIALES_KEY, JSON.stringify([]));
+            }
+        } catch (sessionError) {
+            console.error('No se pudo inicializar eventos especiales en sessionStorage.', sessionError);
+        }
+    }
+}
+
+function obtenerEventosEspeciales() {
+    let raw = null;
+    try {
+        raw = localStorage.getItem(EVENTOS_ESPECIALES_KEY);
+    } catch (e) {
+        console.warn('No se pudo leer eventos especiales desde localStorage, intentando sessionStorage.', e);
+    }
+
+    if (!raw) {
+        try {
+            raw = sessionStorage.getItem(EVENTOS_ESPECIALES_KEY);
+        } catch (e) {
+            console.warn('No se pudo leer eventos especiales desde sessionStorage.', e);
+            return [];
+        }
+    }
+
+    if (!raw || raw.trim() === '') return [];
+    try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+        console.warn('Eventos especiales almacenados no son un array:', parsed);
+        return [];
+    } catch (e) {
+        console.warn('Error leyendo eventos especiales desde storage:', e);
         return [];
     }
 }
 
 function guardarEventosEspeciales(lista) {
-    localStorage.setItem('gdf_eventosEspeciales', JSON.stringify(lista));
+    if (!Array.isArray(lista)) {
+        console.warn('guardarEventosEspeciales recibió un valor inválido:', lista);
+        return;
+    }
+    const contenido = JSON.stringify(lista);
+    try {
+        localStorage.setItem(EVENTOS_ESPECIALES_KEY, contenido);
+    } catch (error) {
+        console.warn('No se pudo guardar eventos especiales en localStorage, intentando sessionStorage.', error);
+        try {
+            sessionStorage.setItem(EVENTOS_ESPECIALES_KEY, contenido);
+        } catch (secondaryError) {
+            console.error('No se pudo guardar eventos especiales en ninguna storage.', secondaryError);
+        }
+    }
 }
+
+window.addEventListener('storage', (event) => {
+    if (event.key === EVENTOS_ESPECIALES_KEY) {
+        const modal = document.getElementById('modal-eventos-especiales');
+        if (modal && modal.style.display === 'flex') {
+            renderizarListaEventos();
+        }
+    }
+});
 
 function abrirModalEventosEspeciales() {
     const modal = document.getElementById('modal-eventos-especiales');
