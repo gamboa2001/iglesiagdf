@@ -861,6 +861,9 @@ window.addEventListener('click', (event) => {
         if (event.target.id === 'modal-nueva-cancion' || event.target.id === 'modal-editar-cancion') {
             editingOriginal = null;
         }
+        if (event.target.id === 'modal-eventos-especiales') {
+            limpiarBuscadorEventos();
+        }
     }
 });
 
@@ -868,3 +871,305 @@ window.addEventListener('click', (event) => {
 window.addEventListener('DOMContentLoaded', () => {
     if (typeof actualizarUIAdmin === 'function') actualizarUIAdmin();
 });
+
+/* ==========================================================================
+   MÓDULO: EVENTOS ESPECIALES
+   Gestiona una lista local de canciones para eventos especiales.
+   Los datos se persisten en localStorage bajo la clave 'gdf_eventosEspeciales'.
+   ========================================================================== */
+
+function obtenerEventosEspeciales() {
+    try {
+        const raw = localStorage.getItem('gdf_eventosEspeciales');
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function guardarEventosEspeciales(lista) {
+    localStorage.setItem('gdf_eventosEspeciales', JSON.stringify(lista));
+}
+
+function abrirModalEventosEspeciales() {
+    const modal = document.getElementById('modal-eventos-especiales');
+    if (modal) {
+        modal.style.display = 'flex';
+        renderizarListaEventos();
+        limpiarBuscadorEventos();
+    }
+}
+
+function cerrarModalEventosEspeciales() {
+    const modal = document.getElementById('modal-eventos-especiales');
+    if (modal) modal.style.display = 'none';
+    limpiarBuscadorEventos();
+}
+
+function limpiarBuscadorEventos() {
+    const buscador = document.getElementById('eventos-buscador');
+    if (buscador) buscador.value = '';
+    const resultados = document.getElementById('eventos-resultados-busqueda');
+    if (resultados) resultados.innerHTML = '';
+}
+
+function actualizarCountBadgeEventos(lista) {
+    const badge = document.getElementById('eventos-count-badge');
+    if (!badge) return;
+    const n = lista.length;
+    badge.textContent = n === 0 ? 'Sin canciones' : n === 1 ? '1 canción' : `${n} canciones`;
+}
+
+function renderizarListaEventos() {
+    const contenedor = document.getElementById('eventos-lista-canciones');
+    if (!contenedor) return;
+
+    const lista = obtenerEventosEspeciales();
+    actualizarCountBadgeEventos(lista);
+
+    contenedor.innerHTML = '';
+
+    if (lista.length === 0) {
+        contenedor.innerHTML = `
+            <p style="text-align:center; color:var(--texto-secundario); padding:20px;" id="eventos-lista-vacia">
+                <i class="fa-solid fa-music" style="font-size:2rem; opacity:0.3; display:block; margin-bottom:10px;"></i>
+                No hay canciones en este evento todavía.<br>¡Añade canciones desde el buscador!
+            </p>`;
+        return;
+    }
+
+    lista.forEach((cancion, idx) => {
+        const tarjeta = crearTarjetaEventoEspecial(cancion, {
+            mostrarQuitar: true,
+            quitarHandler: () => quitarCancionDeEventos(idx),
+            abrirVista: 'letras'
+        });
+        contenedor.appendChild(tarjeta);
+    });
+}
+
+function crearTarjetaEventoEspecial(cancion, opciones = {}) {
+    const tarjeta = document.createElement('div');
+    tarjeta.className = 'tarjeta-cancion tarjeta-cancion-evento';
+    tarjeta.style.cursor = 'pointer';
+
+    const badge = document.createElement('span');
+    badge.className = 'badge-tono-tarjeta';
+    badge.textContent = cancion.tonoOriginal || 'C';
+
+    const title = document.createElement('h3');
+    title.className = 'titulo-clickable';
+    title.textContent = cancion.titulo || '';
+
+    const artistP = document.createElement('p');
+    artistP.innerHTML = `<i class="fa-solid fa-microphone"></i> ${cancion.artista || ''}`;
+
+    const pie = document.createElement('div');
+    pie.className = 'tarjeta-pie';
+
+    const left = document.createElement('div');
+    const tipoSpan = document.createElement('span');
+    tipoSpan.className = 'badge-tipo';
+    tipoSpan.textContent = cancion.tipo || 'Alabanza';
+    left.appendChild(tipoSpan);
+    if (cancion.director) {
+        const dirSpan = document.createElement('span');
+        dirSpan.style = 'font-size:0.85rem; color:var(--texto-secundario); margin-left:8px;';
+        dirSpan.innerHTML = `<i class="fa-solid fa-user-check"></i> ${cancion.director}`;
+        left.appendChild(dirSpan);
+    }
+
+    const right = document.createElement('div');
+    right.style.display = 'flex';
+    right.style.gap = '10px';
+    right.style.alignItems = 'center';
+    right.style.flexWrap = 'wrap';
+
+    const btnLetra = document.createElement('button');
+    btnLetra.className = 'btn-tarjeta-ver';
+    btnLetra.title = 'Abrir letra';
+    btnLetra.innerHTML = `<i class="fa-solid fa-file-lines"></i> <span>Letra</span>`;
+    btnLetra.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cerrarModalEventosEspeciales();
+        const completa = todasLasCanciones.find(c =>
+            (c.titulo || '').trim().toLowerCase() === (cancion.titulo || '').trim().toLowerCase()
+        ) || cancion;
+        abrirVistaCancion(completa, 'letras');
+    });
+    right.appendChild(btnLetra);
+
+    const btnAcordes = document.createElement('button');
+    btnAcordes.className = 'btn-tarjeta-ver';
+    btnAcordes.title = 'Abrir acordes';
+    btnAcordes.innerHTML = `<i class="fa-solid fa-music"></i> <span>Acordes</span>`;
+    btnAcordes.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cerrarModalEventosEspeciales();
+        const completa = todasLasCanciones.find(c =>
+            (c.titulo || '').trim().toLowerCase() === (cancion.titulo || '').trim().toLowerCase()
+        ) || cancion;
+        abrirVistaCancion(completa, 'acordes');
+    });
+    right.appendChild(btnAcordes);
+
+    if (cancion.videoLink && cancion.videoLink.trim() !== '') {
+        const a = document.createElement('a');
+        a.className = 'btn-tarjeta-video';
+        a.href = cancion.videoLink;
+        a.target = '_blank';
+        a.title = 'Ver video de la canción';
+        a.addEventListener('click', (e) => e.stopPropagation());
+        a.innerHTML = `<i class="fa-brands fa-youtube" style="color: #ff0000; font-size: 1.2rem;"></i>`;
+        right.appendChild(a);
+    }
+
+    if (opciones.mostrarQuitar) {
+        const btnQuitar = document.createElement('button');
+        btnQuitar.className = 'btn-tarjeta-repertorio quitar';
+        btnQuitar.title = 'Quitar del evento';
+        btnQuitar.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
+        btnQuitar.addEventListener('click', (e) => {
+            e.stopPropagation();
+            opciones.quitarHandler && opciones.quitarHandler();
+        });
+        right.appendChild(btnQuitar);
+    }
+
+    if (opciones.mostrarAgregar) {
+        const btnAgregar = document.createElement('button');
+        btnAgregar.className = opciones.enEvento ? 'btn-tarjeta-repertorio quitar' : 'btn-tarjeta-repertorio agregar';
+        btnAgregar.title = opciones.enEvento ? 'Ya está en el evento' : 'Añadir al evento';
+        btnAgregar.disabled = opciones.enEvento;
+        btnAgregar.innerHTML = opciones.enEvento
+            ? `<i class="fa-solid fa-check"></i> En evento`
+            : `<i class="fa-solid fa-plus"></i> Añadir`;
+        btnAgregar.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!opciones.enEvento) opciones.agregarHandler && opciones.agregarHandler();
+        });
+        right.appendChild(btnAgregar);
+    }
+
+    pie.appendChild(left);
+    pie.appendChild(right);
+
+    tarjeta.appendChild(badge);
+    tarjeta.appendChild(title);
+    tarjeta.appendChild(artistP);
+    tarjeta.appendChild(pie);
+
+    if (opciones.abrirVista) {
+        tarjeta.addEventListener('click', () => {
+            cerrarModalEventosEspeciales();
+            const completa = todasLasCanciones.find(c =>
+                (c.titulo || '').trim().toLowerCase() === (cancion.titulo || '').trim().toLowerCase()
+            ) || cancion;
+            abrirVistaCancion(completa, opciones.abrirVista);
+        });
+    }
+
+    return tarjeta;
+}
+
+function agregarCancionAEventos(cancion) {
+    const lista = obtenerEventosEspeciales();
+    const yaEsta = lista.some(c =>
+        (c.titulo || '').trim().toLowerCase() === (cancion.titulo || '').trim().toLowerCase()
+    );
+    if (yaEsta) {
+        // Animar visualmente que ya está
+        mostrarToastEventos('Ya está en la lista de Eventos Especiales', 'info');
+        return;
+    }
+    lista.push({
+        titulo: cancion.titulo || '',
+        artista: cancion.artista || '',
+        tonoOriginal: cancion.tonoOriginal || 'C',
+        tipo: cancion.tipo || '',
+        director: cancion.director || '',
+        videoLink: cancion.videoLink || '',
+        letra: cancion.letra || ''
+    });
+    guardarEventosEspeciales(lista);
+    renderizarListaEventos();
+    buscarCancionesParaEvento(); // Refrescar resultados de búsqueda para actualizar el estado del botón
+    mostrarToastEventos(`"${cancion.titulo}" añadida al evento`, 'ok');
+}
+
+function quitarCancionDeEventos(idx) {
+    const lista = obtenerEventosEspeciales();
+    if (idx < 0 || idx >= lista.length) return;
+    const titulo = lista[idx].titulo;
+    lista.splice(idx, 1);
+    guardarEventosEspeciales(lista);
+    renderizarListaEventos();
+    buscarCancionesParaEvento();
+    mostrarToastEventos(`"${titulo}" quitada del evento`, 'warn');
+}
+
+function confirmarLimpiarEventos() {
+    if (!isAdmin()) return;
+    if (confirm('¿Vaciar toda la lista de Eventos Especiales?')) {
+        guardarEventosEspeciales([]);
+        renderizarListaEventos();
+        limpiarBuscadorEventos();
+    }
+}
+
+function buscarCancionesParaEvento() {
+    const buscador = document.getElementById('eventos-buscador');
+    const contenedor = document.getElementById('eventos-resultados-busqueda');
+    if (!buscador || !contenedor) return;
+
+    const texto = buscador.value.trim().toLowerCase();
+    contenedor.innerHTML = '';
+
+    if (texto.length < 1) return;
+
+    const listaEventos = obtenerEventosEspeciales();
+    const idsEnEvento = new Set(listaEventos.map(c => (c.titulo || '').trim().toLowerCase()));
+
+    const resultados = todasLasCanciones.filter(c =>
+        (c.titulo || '').toLowerCase().includes(texto) ||
+        (c.artista || '').toLowerCase().includes(texto)
+    ).slice(0, 8);
+
+    if (resultados.length === 0) {
+        contenedor.innerHTML = `<p style="text-align:center; color:var(--texto-secundario); padding:10px; font-size:0.9rem;">No se encontraron canciones.</p>`;
+        return;
+    }
+
+    resultados.forEach(cancion => {
+        const estaEnEvento = idsEnEvento.has((cancion.titulo || '').trim().toLowerCase());
+        const tarjeta = crearTarjetaEventoEspecial(cancion, {
+            mostrarAgregar: true,
+            enEvento: estaEnEvento,
+            agregarHandler: () => agregarCancionAEventos(cancion),
+            abrirVista: 'letras'
+        });
+        contenedor.appendChild(tarjeta);
+    });
+}
+
+// Toast de notificación breve para el módulo de eventos
+function mostrarToastEventos(mensaje, tipo) {
+    // Eliminar toast anterior si existe
+    const anterior = document.getElementById('eventos-toast');
+    if (anterior) anterior.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'eventos-toast';
+    toast.className = `eventos-toast eventos-toast-${tipo}`;
+    toast.innerHTML = `<i class="fa-solid ${tipo === 'ok' ? 'fa-circle-check' : tipo === 'warn' ? 'fa-circle-minus' : 'fa-circle-info'}"></i> ${mensaje}`;
+    document.body.appendChild(toast);
+
+    // Activar animación
+    requestAnimationFrame(() => { toast.classList.add('visible'); });
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 350);
+    }, 2500);
+}

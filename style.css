@@ -675,3 +675,383 @@ body {
     .modal-contenido { padding: 15px; max-height: 95vh; }
     #cancion-cuerpo { font-size: 0.95rem; padding: 10px; }
 }
+
+/* ==========================================================================
+   MÓDULO: EVENTOS ESPECIALES
+   ========================================================================== */
+
+/* Modal principal con ancho un poco más amplio */
+.modal-eventos-contenido {
+    max-width: 680px !important;
+}
+
+/* Cabecera del modal */
+.eventos-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.eventos-icono-titulo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.eventos-icono-badge {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.eventos-count-badge {
+    background: #ede9fe;
+    color: #6d28d9;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+/* Lista de canciones del evento */
+.eventos-lista-canciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 8px;
+}
+
+.eventos-lista-canciones::-webkit-scrollbar { width: 4px; }
+.eventos-lista-canciones::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+
+.eventos-resultados-busqueda {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.tarjeta-cancion-evento {
+    min-height: 190px;
+}
+
+.tarjeta-cancion-evento.tarjeta-en-evento {
+    border-color: #c0b7f8;
+    box-shadow: 0 10px 20px rgba(124, 58, 237, 0.08);
+}
+
+.btn-tarjeta-repertorio.quitar {
+    color: #dc2626;
+    background-color: #f8d7da;
+}
+
+.btn-tarjeta-repertorio.agregar {
+    color: #047857;
+    background-color: #d1fae5;
+}
+
+.btn-tarjeta-repertorio {
+    border: none;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.btn-tarjeta-repertorio:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.eventos-num {
+    width: 24px;
+    height: 24px;
+    background: #7c3aed;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.eventos-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.eventos-titulo {
+    font-weight: 700;
+    font-size: 0.97rem;
+    color: var(--texto-principal);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.eventos-sub {
+    font-size: 0.82rem;
+    color: var(--texto-secundario);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.eventos-acciones {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* Botón "Ver" letra en la fila del evento */
+.btn-eventos-ver {
+    background: none;
+    border: 1px solid #c4b5fd;
+    color: #7c3aed;
+    border-radius: 7px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-eventos-ver:hover {
+    background-color: #ede9fe;
+    transform: scale(1.08);
+}
+
+/* Botón "Quitar" canción de la fila del evento */
+.btn-eventos-quitar {
+    background: none;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+    border-radius: 7px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-eventos-quitar:hover {
+    background-color: #fce8e6;
+    transform: scale(1.08);
+}
+
+/* Sección de búsqueda para añadir canciones */
+.eventos-agregar-seccion {
+    margin-top: 4px;
+}
+
+.eventos-buscador-wrap {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.eventos-buscador-wrap input,
+#eventos-buscador {
+    width: 100%;
+    padding: 9px 14px;
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    box-sizing: border-box;
+    background-color: #fff;
+    color: var(--texto-principal);
+    transition: border-color 0.2s;
+}
+
+#eventos-buscador:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Contenedor de resultados de búsqueda */
+.eventos-resultados-busqueda {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.eventos-resultados-busqueda::-webkit-scrollbar { width: 4px; }
+.eventos-resultados-busqueda::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+
+/* Fila de resultado de búsqueda */
+.eventos-resultado-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 8px;
+    background: #fff;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.eventos-resultado-item:hover {
+    background-color: #f8f7ff;
+    border-color: #c4b5fd;
+}
+
+.eventos-resultado-item.ya-en-evento {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+    opacity: 0.85;
+}
+
+.eventos-resultado-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.eventos-resultado-info strong {
+    font-size: 0.95rem;
+    color: var(--texto-principal);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.eventos-resultado-info span {
+    font-size: 0.82rem;
+    color: var(--texto-secundario);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+/* Botones de acción en resultados de búsqueda */
+.btn-eventos-resultado {
+    border: none;
+    border-radius: 7px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: transform 0.1s, filter 0.15s;
+}
+
+.btn-agregar-evento {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+}
+
+.btn-agregar-evento:hover {
+    filter: brightness(1.08);
+    transform: scale(1.04);
+}
+
+.btn-ya-en-evento {
+    background: #d1fae5;
+    color: #059669;
+    cursor: default;
+}
+
+/* Botón limpiar lista */
+.btn-eventos-limpiar {
+    background: none;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-eventos-limpiar:hover {
+    background-color: #fce8e6;
+    transform: scale(1.03);
+}
+
+/* Toast de notificación breve */
+.eventos-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e293b;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    z-index: 99999;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.eventos-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.eventos-toast-ok i   { color: #34d399; }
+.eventos-toast-warn i { color: #f87171; }
+.eventos-toast-info i { color: #60a5fa; }
+
+/* Responsividad para el modal de eventos */
+@media (max-width: 600px) {
+    .eventos-fila-cancion {
+        grid-template-columns: 26px 1fr auto;
+        padding: 8px 10px;
+        gap: 8px;
+    }
+    .eventos-titulo { font-size: 0.9rem; }
+    .btn-eventos-resultado { padding: 5px 10px; font-size: 0.8rem; }
+    .eventos-toast { font-size: 0.82rem; padding: 8px 16px; }
+}

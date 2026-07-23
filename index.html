@@ -40,12 +40,111 @@
                     <i class="fa-solid fa-music"></i> Todas las Canciones
                 </a>
 
+                <button onclick="abrirModalEventosEspeciales()" class="btn" style="background-color: #7c3aed; width: 85%; max-width: 280px; text-align: center; box-sizing: border-box; border: none; cursor: pointer;">
+                    <i class="fa-solid fa-star"></i> Eventos Especiales
+                </button>
+
                 <a href="nueva-cancion.html" id="btn-add-index" class="btn" data-admin-only="true" style="background-color: #d97706; width: 85%; max-width: 280px; text-decoration: none; display: none; text-align: center; box-sizing: border-box;">
                     <i class="fa-solid fa-plus"></i> Añadir Nueva Canción
                 </a>
             </div>
         </div>
     </div>
+
+    <!-- ===== MODAL: EVENTOS ESPECIALES ===== -->
+    <div id="modal-eventos-especiales" class="modal-fondo" style="display: none;">
+        <div class="modal-contenido modal-eventos-contenido">
+            <button class="btn-cerrar" onclick="cerrarModalEventosEspeciales()">&times;</button>
+            
+            <div class="eventos-header">
+                <div class="eventos-icono-titulo">
+                    <span class="eventos-icono-badge"><i class="fa-solid fa-star"></i></span>
+                    <div>
+                        <h2 style="margin:0; font-size:1.5rem;">Eventos Especiales</h2>
+                        <p style="margin:0; color:var(--texto-secundario); font-size:0.9rem;">Lista de canciones para eventos especiales</p>
+                    </div>
+                </div>
+                <span id="eventos-count-badge" class="eventos-count-badge">0 canciones</span>
+            </div>
+
+            <!-- Lista de canciones del evento -->
+            <div id="eventos-lista-canciones" class="eventos-lista-canciones">
+                <p style="text-align:center; color:var(--texto-secundario); padding:20px;" id="eventos-lista-vacia">
+                    <i class="fa-solid fa-music" style="font-size:2rem; opacity:0.3; display:block; margin-bottom:10px;"></i>
+                    No hay canciones en este evento todavía.<br>¡Añade canciones desde el buscador!
+                </p>
+            </div>
+
+            <!-- Separador -->
+            <hr style="border:none; border-top:1px solid var(--borde-tarjeta); margin: 16px 0;">
+
+            <!-- Buscador para añadir canciones -->
+            <div class="eventos-agregar-seccion">
+                <h3 style="margin:0 0 10px 0; font-size:1rem; color:var(--texto-principal);">
+                    <i class="fa-solid fa-magnifying-glass"></i> Añadir canciones al evento
+                </h3>
+                <div class="eventos-buscador-wrap">
+                    <input 
+                        type="text" 
+                        id="eventos-buscador" 
+                        placeholder="Buscar canción por título o artista..." 
+                        oninput="buscarCancionesParaEvento()"
+                        autocomplete="off"
+                    >
+                </div>
+                <div id="eventos-resultados-busqueda" class="eventos-resultados-busqueda"></div>
+            </div>
+
+            <!-- Botón limpiar todo (admin) -->
+            <div id="eventos-btn-limpiar-wrap" data-admin-only="true" style="display:none; margin-top:14px; text-align:right;">
+                <button onclick="confirmarLimpiarEventos()" class="btn-eventos-limpiar">
+                    <i class="fa-solid fa-trash"></i> Vaciar lista
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: VISTA DE CANCIÓN (necesario para "Ver letra" desde eventos) ===== -->
+    <div id="vista-cancion" class="modal-fondo" style="display: none;">
+        <div class="modal-contenido">
+            <button class="btn-cerrar" onclick="regresarALista()">&times;</button>
+            <h2 id="cancion-titulo">Título</h2>
+            <h3 id="cancion-artista" style="color: var(--texto-secundario); margin-top: -5px; font-weight: 600;">Artista</h3>
+
+            <div class="controles-vista-cancion" role="group" aria-label="Vista de la canción">
+                <button type="button" class="btn-vista-cancion active" data-vista="letras" onclick="cambiarVistaCancion('letras')">Letras</button>
+                <button type="button" class="btn-vista-cancion" data-vista="acordes" onclick="cambiarVistaCancion('acordes')">Acordes</button>
+            </div>
+            
+            <div class="controles-tono" id="controles-tono-bloque">
+                <span>Cambiar Tono:</span>
+                <button onclick="cambiarTono(-1)">- ½ Tono</button>
+                <span id="tono-actual" class="badge-tono">C</span>
+                <button onclick="cambiarTono(1)">+ ½ Tono</button>
+            </div>
+            
+            <pre id="cancion-cuerpo"></pre>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: LOGIN ADMIN ===== -->
+    <div id="modal-login-admin" class="modal-fondo" style="display: none;">
+        <div class="modal-contenido formulario-modal">
+            <button class="btn-cerrar" onclick="cerrarAdminLogin()">&times;</button>
+            <h3>Ingresar como Administrador</h3>
+            <form onsubmit="intentarLogin(event)">
+                <div class="grupo-campo">
+                    <label>Contraseña</label>
+                    <input id="admin-password-input" type="password" required placeholder="Ingresa la contraseña de administrador">
+                </div>
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+                    <button type="button" class="btn" onclick="cerrarAdminLogin()">Cancelar</button>
+                    <button type="submit" class="btn" style="background-color:#2563eb; color:white;">Entrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
