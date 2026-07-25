@@ -912,12 +912,33 @@ function eliminarCancion(id) {
             todasLasCanciones = todasLasCanciones.filter(c => c.id !== id);
             localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
             filtrarYMostrar();
+            if (typeof cerrarModalEditarCancion === 'function') {
+                cerrarModalEditarCancion();
+            }
             alert('Canción eliminada correctamente.');
         })
         .catch((error) => {
             console.error('Error al eliminar canción:', error);
             alert('No se pudo eliminar la canción.');
         });
+}
+
+function confirmarEliminarCancionDesdeModal() {
+    if (!isAdmin()) {
+        alert('Solo administradores pueden eliminar canciones.');
+        abrirAdminLogin();
+        return;
+    }
+
+    if (!editingOriginal || !editingOriginal.id) {
+        alert('No se pudo identificar la canción para eliminar.');
+        return;
+    }
+
+    const titulo = (document.getElementById('editar-titulo')?.value || '').trim() || 'esta canción';
+    if (confirm(`¿Deseas eliminar "${titulo}" de la base de datos?`)) {
+        eliminarCancion(editingOriginal.id);
+    }
 }
 
 // Función pública para la página completa (nueva-cancion.html)
@@ -1360,6 +1381,7 @@ window.enviarNuevaCancion = enviarNuevaCancion;
 window.alternarDesdeTarjeta = alternarDesdeTarjeta;
 window.abrirEditarCancion = abrirEditarCancion;
 window.actualizarUIAdmin = actualizarUIAdmin;
+window.confirmarEliminarCancionDesdeModal = confirmarEliminarCancionDesdeModal;
 window.obtenerDatosSheets = obtenerDatosSheets; // Se mantiene por compatibilidad si se llama externamente
 window.loginBanda = loginBanda;
 window.logoutAdmin = logoutAdmin;
