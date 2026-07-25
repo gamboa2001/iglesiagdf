@@ -34,8 +34,8 @@ const bandaEmails = [
     "integrante2@gmail.com",
     "integrante3@gmail.com",
     "integrante4@gmail.com",
-    "integrante5@gmail.com",
-    "integrante6@gmail.com"
+    "adnresfarid2007@gmail.com",
+    "gamboaisaac2001@gmail.com"
 ];
 
 // Estado reactivo del usuario autenticado
