@@ -55,6 +55,13 @@ const notas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 const EVENTOS_ESPECIALES_KEY = 'gdf_eventosEspeciales';
 
+function obtenerVistaDesdeURL() {
+    if (typeof window === 'undefined' || !window.location) return 'canciones';
+    const params = new URLSearchParams(window.location.search);
+    const vista = params.get('vista');
+    return vista === 'repertorio' ? 'repertorio' : 'canciones';
+}
+
 // Devuelve true si el usuario autenticado actual es miembro autorizado de la banda
 function isAdmin() {
     return currentUser !== null && bandaEmails.includes(currentUser.email);
@@ -1003,6 +1010,22 @@ window.addEventListener('click', (event) => {
 window.addEventListener('DOMContentLoaded', () => {
     if (typeof actualizarUIAdmin === 'function') actualizarUIAdmin();
     if (typeof inicializarEventosEspeciales === 'function') inicializarEventosEspeciales();
+
+    if (document.getElementById('titulo-lista')) {
+        vistaActual = obtenerVistaDesdeURL();
+        const tituloLista = document.getElementById('titulo-lista');
+        if (tituloLista) {
+            tituloLista.innerText = vistaActual === 'repertorio' ? 'Repertorio de la Semana' : 'Todas las Canciones';
+        }
+        filtrarYMostrar();
+
+        document.querySelectorAll('.tab-item').forEach((tab) => {
+            if (tab.tagName.toLowerCase() !== 'a') return;
+            const tabUrl = new URL(tab.href, window.location.origin);
+            const tabVista = tabUrl.searchParams.get('vista');
+            tab.classList.toggle('active', tabVista === vistaActual);
+        });
+    }
 
     const btnEliminarCancion = document.getElementById('btn-eliminar-cancion');
     if (btnEliminarCancion) {

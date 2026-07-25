@@ -2,166 +2,122 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#f2f2f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>GDF - Registrar Nueva Canción</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <style>
-        .formulario-contenedor {
-            background-color: var(--fondo-contenedor);
-            border: 1px solid var(--borde-tarjeta);
-            border-radius: 12px;
-            width: 100%;
-            max-width: 650px;
-            margin: 30px auto;
-            padding: 30px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-            box-sizing: border-box;
-            position: relative;
-        }
-        .btn-regresar-flotante {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: none;
-            border: none;
-            font-size: 1.1rem;
-            color: var(--texto-secundario);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 600;
-            transition: color 0.2s, transform 0.2s;
-            text-decoration: none;
-        }
-        .btn-regresar-flotante:hover {
-            color: var(--azul-identidad);
-            transform: translateX(-3px);
-        }
-        .campo-grupo {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-        .campo-grupo label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 6px;
-            color: var(--texto-secundario);
-        }
-        .campo-grupo input[type="text"],
-        .campo-grupo input[type="url"],
-        .campo-grupo select,
-        .campo-grupo textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--borde-tarjeta);
-            border-radius: 6px;
-            font-size: 1rem;
-            outline: none;
-            box-sizing: border-box;
-            background-color: #ffffff;
-            color: var(--texto-principal);
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        .campo-grupo input:focus, .campo-grupo select:focus, .campo-grupo textarea:focus {
-            border-color: var(--azul-identidad);
-        }
-        .fila-doble {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        @media (max-width: 600px) {
-            .fila-doble { grid-template-columns: 1fr; gap: 0; }
-            .btn-regresar-flotante { position: static; margin-bottom: 15px; }
-        }
-    </style>
 </head>
-<body class="main" style="padding: 20px;">
-
-    <div class="formulario-contenedor">
-        <a href="index.html" class="btn-regresar-flotante">
-            <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
-        </a>
-
-        <div style="text-align: center; margin-bottom: 25px; margin-top: 15px;">
-            <h2 style="margin: 0; color: var(--texto-principal); font-size: 1.8rem;">Añadir Nueva Canción</h2>
-            <p style="margin: 5px 0 0 0; color: var(--texto-secundario); font-style: italic;">Formulario de Registro de Repertorio GDF</p>
+<body class="main">
+    <header class="top-bar">
+        <a href="index.html" class="back-button"><i class="fa-solid fa-chevron-left"></i> Inicio</a>
+        <div class="top-bar-text">
+            <p class="eyebrow">Registrar canción</p>
+            <h1>Añadir nueva canción</h1>
         </div>
+        <button id="link-admin" class="icon-button" type="button" onclick="abrirAdminLogin()">
+            <i class="fa-solid fa-user"></i>
+            Admin
+        </button>
+    </header>
 
-        <div id="cuerpo-formulario">
-            <div class="campo-grupo">
-                <label>Título de la Canción *</label>
-                <input type="text" id="nuevo-titulo" placeholder="Ej: Alístate">
-            </div>
-            
-            <div class="fila-doble">
-                <div class="campo-grupo">
-                    <label>Artista / Ministerio *</label>
-                    <input type="text" id="nuevo-artista" placeholder="Ej: New Wine">
+    <main class="page-shell">
+        <section class="content-segment formulario-modal">
+            <form id="form-nueva-cancion" onsubmit="guardarNuevaCancion(event)">
+                <div class="grupo-campo">
+                    <label>Título de la Canción *</label>
+                    <input type="text" id="nuevo-titulo" placeholder="Ej: Alístate" required>
                 </div>
-                <div class="campo-grupo">
-                    <label>Tono Original *</label>
-                    <select id="nuevo-tono">
-                        <option value="C">C</option><option value="C#">C#</option><option value="D">D</option>
-                        <option value="D#">D#</option><option value="E">E</option><option value="F">F</option>
-                        <option value="F#">F#</option><option value="G">G</option><option value="G#">G#</option>
-                        <option value="A">A</option><option value="A#">A#</option><option value="B">B</option>
-                        <option value="Cm">Cm</option><option value="C#m">C#m</option><option value="Dm">Dm</option>
-                        <option value="D#m">D#m</option><option value="Em">Em</option><option value="Fm">Fm</option>
-                        <option value="F#m">F#m</option><option value="Gm">Gm</option><option value="G#m">G#m</option>
-                        <option value="Am">Am</option><option value="A#m">A#m</option><option value="Bm">Bm</option>
-                    </select>
+                <div class="fila-doble">
+                    <div class="grupo-campo">
+                        <label>Artista / Ministerio *</label>
+                        <input type="text" id="nuevo-artista" placeholder="Ej: New Wine" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Tono Original *</label>
+                        <select id="nuevo-tono" required>
+                            <option value="C">C</option>
+                            <option value="C#">C#</option>
+                            <option value="D">D</option>
+                            <option value="D#">D#</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                            <option value="F#">F#</option>
+                            <option value="G">G</option>
+                            <option value="G#">G#</option>
+                            <option value="A">A</option>
+                            <option value="A#">A#</option>
+                            <option value="B">B</option>
+                            <option value="Cm">Cm</option>
+                            <option value="C#m">C#m</option>
+                            <option value="Dm">Dm</option>
+                            <option value="D#m">D#m</option>
+                            <option value="Em">Em</option>
+                            <option value="Fm">Fm</option>
+                            <option value="F#m">F#m</option>
+                            <option value="Gm">Gm</option>
+                            <option value="G#m">G#m</option>
+                            <option value="Am">Am</option>
+                            <option value="A#m">A#m</option>
+                            <option value="Bm">Bm</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-
-            <div class="fila-doble">
-                <div class="campo-grupo">
-                    <label>Tipo de Tiempo</label>
-                    <input type="text" id="nuevo-tipo" placeholder="Ej: Alabanza" list="tipos-list-nuevo">
-                    <datalist id="tipos-list-nuevo">
-                        <option value="Alabanza">
-                        <option value="Adoración">
-                        <option value="Especial">
-                    </datalist>
+                <div class="fila-doble">
+                    <div class="grupo-campo">
+                        <label>Tipo de canción</label>
+                        <input type="text" id="nuevo-tipo" placeholder="Ej: Alabanza" list="tipos-list-nuevo">
+                        <datalist id="tipos-list-nuevo">
+                            <option value="Alabanza">
+                            <option value="Adoración">
+                            <option value="Especial">
+                        </datalist>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Director asignado</label>
+                        <input type="text" id="nuevo-director" placeholder="Ej: Carlos Mendoza">
+                    </div>
                 </div>
-                <div class="campo-grupo">
-                    <label>Director Asignado</label>
-                    <input type="text" id="nuevo-director" placeholder="Nombre del líder">
+                <div class="grupo-campo">
+                    <label>Enlace de video (YouTube / Drive)</label>
+                    <input type="url" id="nuevo-video" placeholder="https://youtube.com/..."></input>
                 </div>
-            </div>
+                <div class="grupo-campo">
+                    <label>Letra y acordes</label>
+                    <textarea id="nuevo-letra" placeholder="Ej: [G]Me postro ante [Em]ti..."></textarea>
+                </div>
+                <button type="submit" class="btn-enviar-form btn"><i class="fa-solid fa-cloud-arrow-up"></i> Registrar canción</button>
+            </form>
+        </section>
+    </main>
 
-            <div class="campo-grupo">
-                <label>Enlace de Video (YouTube / Drive)</label>
-                <input type="url" id="nuevo-video" placeholder="https://youtube.com/...">
-            </div>
+    <nav class="bottom-nav" aria-label="Navegación inferior">
+        <ul>
+            <li><a href="index.html" class="tab-item"><i class="fa-solid fa-house"></i><span>Inicio</span></a></li>
+            <li><a href="cancionero.html?vista=repertorio" class="tab-item"><i class="fa-solid fa-layer-group"></i><span>Repertorio</span></a></li>
+            <li><a href="cancionero.html?vista=canciones" class="tab-item"><i class="fa-solid fa-music"></i><span>Canciones</span></a></li>
+            <li><button class="tab-item" type="button" onclick="abrirAdminLogin()"><i class="fa-solid fa-user"></i><span>Admin</span></button></li>
+        </ul>
+    </nav>
 
-            <div class="campo-grupo">
-                <label>Letra y Bloques de Acordes</label>
-                <textarea id="nuevo-letra" style="height: 180px; font-family: 'Courier New', monospace;" placeholder="Usa corchetes para los acordes. Ejemplo:\n[G] Me postro ante [Em] ti..."></textarea>
-            </div>
-
-            <button class="btn" data-admin-only="true" style="margin-top: 10px; width: 100%; background-color: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: none;" onclick="enviarNuevaCancion()">
-                <i class="fa-solid fa-cloud-arrow-up"></i> Registrar e Insertar Canción
-            </button>
-        </div>
-    </div>
-    <script type="module" src="script.js"></script>
-
-    <!-- Modal de login de administrador (Google Sign-In) -->
     <div id="modal-login-admin" class="modal-fondo" style="display: none;">
         <div class="modal-contenido formulario-modal">
+            <div class="sheet-handle"></div>
             <button class="btn-cerrar" onclick="cerrarAdminLogin()">&times;</button>
             <h3>Acceso de Administrador</h3>
-            <p style="color: var(--texto-secundario); margin-bottom: 20px; text-align:center;">Inicia sesión con tu cuenta de Google autorizada de la banda.</p>
+            <p style="margin-bottom: 20px; color: var(--texto-secundario);">Inicia sesión con tu cuenta de Google autorizada de la banda.</p>
             <div style="display:flex; justify-content:center; margin-top:8px;">
-                <button type="button" class="btn" style="background-color:#4285F4; color:white; display:flex; align-items:center; gap:10px; padding: 10px 20px;" onclick="loginBanda()">
-                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#fff" d="M44.5 20H24v8.5h11.7C34.2 33.6 29.7 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 6 1.1 8.2 2.9l6-6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.8 0 20-7.8 21-18.3.1-.9.1-1.7.1-2.6v-.2c0-1.4-.1-2.8-.6-4.5z"/></svg>
-                    Entrar con Google
+                <button type="button" class="btn" style="background-color:#4285F4; color:white;" onclick="loginBanda()">
+                    <i class="fa-brands fa-google"></i> Entrar con Google
                 </button>
             </div>
         </div>
     </div>
+
+    <script type="module" src="script.js"></script>
 </body>
 </html>

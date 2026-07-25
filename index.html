@@ -2,142 +2,148 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#f2f2f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>GDF - Ministerio de Alabanza</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="main">
-    <header class="header">
-        <h1>GDF</h1>
-        <nav class="nav-hamburguesa">
-            <input type="checkbox" id="menu-toggle" class="menu-checkbox">
-            <label for="menu-toggle" class="menu-icono">
-                <span></span>
-                <span></span>
-                <span></span>
-            </label>
-            <ul class="menu-links">
-                <li><a href="index.html" class="active">Inicio</a></li>
-                <li><a href="cancionero.html?vista=repertorio">Repertorio de la Semana</a></li>
-                <li><a href="cancionero.html?vista=canciones">Todas las Canciones</a></li>
-                <li><a href="#" id="link-admin">Admin</a></li>
-                <li><a href="nueva-cancion.html" data-admin-only="true" style="color: #fbbf24; font-weight: bold; display: none;"><i class="fa-solid fa-plus"></i> Añadir Canción</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <div class="container">
-        <div id="vista-inicio" class="seccion-vista wellcome">
-            <h2>Bienvenidos a GDF</h2>
-            <p>Repositorio oficial de letras y acordes para el ministerio de alabanza. Selecciona una opción en el menú o accede directamente a los paneles inferiores.</p>
-            
-            <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; margin-top: 20px;">
-                <a href="cancionero.html?vista=repertorio" class="btn" style="width: 85%; max-width: 280px; text-decoration: none; display: inline-block; text-align: center; box-sizing: border-box;">
-                    <i class="fa-solid fa-layer-group"></i> Ver Repertorio Semanal
-                </a>
-                
-                <a href="cancionero.html?vista=canciones" class="btn" style="background-color: #2563eb; width: 85%; max-width: 280px; text-decoration: none; display: inline-block; text-align: center; box-sizing: border-box;">
-                    <i class="fa-solid fa-music"></i> Todas las Canciones
-                </a>
-
-                <button onclick="abrirModalEventosEspeciales()" class="btn" style="background-color: #7c3aed; width: 85%; max-width: 280px; text-align: center; box-sizing: border-box; border: none; cursor: pointer;">
-                    <i class="fa-solid fa-star"></i> Eventos Especiales
-                </button>
-
-                <a href="nueva-cancion.html" id="btn-add-index" class="btn" data-admin-only="true" style="background-color: #d97706; width: 85%; max-width: 280px; text-decoration: none; display: none; text-align: center; box-sizing: border-box;">
-                    <i class="fa-solid fa-plus"></i> Añadir Nueva Canción
-                </a>
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <div class="top-bar-avatar">🎵</div>
+            <div class="top-bar-text">
+                <p class="eyebrow">Ministerio de Alabanza</p>
+                <h1>GDF</h1>
             </div>
         </div>
-    </div>
+        <button id="link-admin" class="icon-button" type="button" onclick="abrirAdminLogin()">
+            <i class="fa-solid fa-user"></i>
+            Admin
+        </button>
+    </header>
 
-    <!-- ===== MODAL: EVENTOS ESPECIALES ===== -->
+    <main class="page-shell">
+        <section class="content-segment welcome-card">
+            <div class="welcome-copy">
+                <p class="eyebrow">Bienvenido</p>
+                <h2>Bienvenido a GDF</h2>
+                <p>Seamos aceite fresco para esta nueva generacion y que Dios traiga avivamiento a nuestras vidad.</p>
+            </div>
+
+            <div class="action-grid">
+                <a href="cancionero.html?vista=repertorio" class="action-card">
+                    <div class="icon-box"><i class="fa-solid fa-layer-group"></i></div>
+                    <div class="action-copy">
+                        <strong>Repertorio de la Semana</strong>
+                        <span>Ver el conjunto de canciones seleccionadas para el próximo servicio.</span>
+                    </div>
+                    <div class="chevron"><i class="fa-solid fa-chevron-right"></i></div>
+                </a>
+
+                <a href="cancionero.html?vista=canciones" class="action-card">
+                    <div class="icon-box"><i class="fa-solid fa-music"></i></div>
+                    <div class="action-copy">
+                        <strong>Todas las Canciones</strong>
+                        <span>Explora el cancionero completo con filtros y acceso rápido a letras.</span>
+                    </div>
+                    <div class="chevron"><i class="fa-solid fa-chevron-right"></i></div>
+                </a>
+
+                <button class="action-card btn-secondary" type="button" onclick="abrirModalEventosEspeciales()">
+                    <div class="icon-box"><i class="fa-solid fa-star"></i></div>
+                    <div class="action-copy">
+                        <strong>Eventos Especiales</strong>
+                        <span>Administra las canciones especiales para servicios y celebraciones.</span>
+                    </div>
+                    <div class="chevron"><i class="fa-solid fa-chevron-right"></i></div>
+                </button>
+
+                <a href="nueva-cancion.html" id="btn-add-index" class="action-card admin-only" data-admin-only="true" style="display:none;">
+                    <div class="icon-box"><i class="fa-solid fa-plus"></i></div>
+                    <div class="action-copy">
+                        <strong>Añadir Nueva Canción</strong>
+                        <span>Registra canciones nuevas directamente en el repertorio.</span>
+                    </div>
+                    <div class="chevron"><i class="fa-solid fa-chevron-right"></i></div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navegación inferior">
+        <ul>
+            <li><a href="index.html" class="tab-item active"><i class="fa-solid fa-house"></i><span>Inicio</span></a></li>
+            <li><a href="cancionero.html?vista=repertorio" class="tab-item"><i class="fa-solid fa-layer-group"></i><span>Repertorio</span></a></li>
+            <li><a href="cancionero.html?vista=canciones" class="tab-item"><i class="fa-solid fa-music"></i><span>Canciones</span></a></li>
+            <li><button id="link-admin-bottom" class="tab-item" type="button" onclick="abrirAdminLogin()"><i class="fa-solid fa-user"></i><span>Admin</span></button></li>
+        </ul>
+    </nav>
+
     <div id="modal-eventos-especiales" class="modal-fondo" style="display: none;">
         <div class="modal-contenido modal-eventos-contenido">
+            <div class="sheet-handle"></div>
             <button class="btn-cerrar" onclick="cerrarModalEventosEspeciales()">&times;</button>
-            
             <div class="eventos-header">
                 <div class="eventos-icono-titulo">
                     <span class="eventos-icono-badge"><i class="fa-solid fa-star"></i></span>
                     <div>
                         <h2 style="margin:0; font-size:1.5rem;">Eventos Especiales</h2>
-                        <p style="margin:0; color:var(--texto-secundario); font-size:0.9rem;">Lista de canciones para eventos especiales</p>
+                        <p style="margin:0; color:var(--texto-secundario);">Lista de canciones para ocasiones especiales.</p>
                     </div>
                 </div>
                 <span id="eventos-count-badge" class="eventos-count-badge">0 canciones</span>
             </div>
-
-            <!-- Lista de canciones del evento -->
-            <div id="eventos-lista-canciones" class="eventos-lista-canciones">
-                <p style="text-align:center; color:var(--texto-secundario); padding:20px;" id="eventos-lista-vacia">
-                    <i class="fa-solid fa-music" style="font-size:2rem; opacity:0.3; display:block; margin-bottom:10px;"></i>
-                    No hay canciones en este evento todavía.<br>¡Añade canciones desde el buscador!
-                </p>
-            </div>
-
-            <!-- Separador -->
-            <hr style="border:none; border-top:1px solid var(--borde-tarjeta); margin: 16px 0;">
-
-            <!-- Buscador para añadir canciones -->
+            <div id="eventos-lista-canciones" class="eventos-lista-canciones"></div>
+            <hr class="soft-separator">
             <div class="eventos-agregar-seccion">
-                <h3 style="margin:0 0 10px 0; font-size:1rem; color:var(--texto-principal);">
-                    <i class="fa-solid fa-magnifying-glass"></i> Añadir canciones al evento
-                </h3>
+                <h3 style="margin:0 0 10px 0; color:var(--texto-principal);">Añadir canciones al evento</h3>
                 <div class="eventos-buscador-wrap">
-                    <input 
-                        type="text" 
-                        id="eventos-buscador" 
-                        placeholder="Buscar canción por título o artista..." 
-                        oninput="buscarCancionesParaEvento()"
-                        autocomplete="off"
-                    >
+                    <input type="text" id="eventos-buscador" placeholder="Buscar canción por título o artista..." oninput="buscarCancionesParaEvento()" autocomplete="off">
                 </div>
                 <div id="eventos-resultados-busqueda" class="eventos-resultados-busqueda"></div>
             </div>
-
-            <!-- Botón limpiar todo (admin) -->
             <div id="eventos-btn-limpiar-wrap" data-admin-only="true" style="display:none; margin-top:14px; text-align:right;">
-                <button onclick="confirmarLimpiarEventos()" class="btn-eventos-limpiar">
-                    <i class="fa-solid fa-trash"></i> Vaciar lista
-                </button>
+                <button onclick="confirmarLimpiarEventos()" class="btn-eventos-limpiar"><i class="fa-solid fa-trash"></i> Vaciar lista</button>
             </div>
         </div>
     </div>
 
-    <!-- ===== MODAL: VISTA DE CANCIÓN (necesario para "Ver letra" desde eventos) ===== -->
     <div id="vista-cancion" class="modal-fondo" style="display: none;">
         <div class="modal-contenido">
+            <div class="sheet-handle"></div>
             <button class="btn-cerrar" onclick="regresarALista()">&times;</button>
             <h2 id="cancion-titulo">Título</h2>
-            <h3 id="cancion-artista" style="color: var(--texto-secundario); margin-top: -5px; font-weight: 600;">Artista</h3>
-
+            <h3 id="cancion-artista" style="color: var(--texto-secundario); margin-top: 4px; font-weight: 600;">Artista</h3>
             <div class="controles-vista-cancion" role="group" aria-label="Vista de la canción">
                 <button type="button" class="btn-vista-cancion active" data-vista="letras" onclick="cambiarVistaCancion('letras')">Letras</button>
                 <button type="button" class="btn-vista-cancion" data-vista="acordes" onclick="cambiarVistaCancion('acordes')">Acordes</button>
             </div>
-            
             <div class="controles-tono" id="controles-tono-bloque">
-                <span>Cambiar Tono:</span>
-                <button onclick="cambiarTono(-1)">- ½ Tono</button>
-                <span id="tono-actual" class="badge-tono">C</span>
-                <button onclick="cambiarTono(1)">+ ½ Tono</button>
+                <span>Cambiar tono</span>
+                <div style="display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap: wrap;">
+                    <button onclick="cambiarTono(-1)">- ½ Tono</button>
+                    <span id="tono-actual" class="badge-tono">C</span>
+                    <button onclick="cambiarTono(1)">+ ½ Tono</button>
+                </div>
             </div>
-            
             <pre id="cancion-cuerpo"></pre>
         </div>
     </div>
 
-    <!-- ===== MODAL: LOGIN ADMIN (Google Sign-In) ===== -->
     <div id="modal-login-admin" class="modal-fondo" style="display: none;">
         <div class="modal-contenido formulario-modal">
+            <div class="sheet-handle"></div>
             <button class="btn-cerrar" onclick="cerrarAdminLogin()">&times;</button>
             <h3>Acceso de Administrador</h3>
-            <p style="color: var(--texto-secundario); margin-bottom: 20px; text-align:center;">Inicia sesión con tu cuenta de Google autorizada de la banda.</p>
-            <div style="display:flex; justify-content:center; margin-top:8px;">
-                <button type="button" class="btn" style="background-color:#4285F4; color:white; display:flex; align-items:center; gap:10px; padding: 10px 20px;" onclick="loginBanda()">
-                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#fff" d="M44.5 20H24v8.5h11.7C34.2 33.6 29.7 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 6 1.1 8.2 2.9l6-6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.8 0 20-7.8 21-18.3.1-.9.1-1.7.1-2.6v-.2c0-1.4-.1-2.8-.6-4.5z"/></svg>
-                    Entrar con Google
+            <p style="margin-bottom: 20px; color: var(--texto-secundario);">Inicia sesión con tu cuenta de Google autorizada del ministerio.</p>
+            <div style="display:flex; justify-content:center; margin-top:10px;">
+                <button type="button" class="btn" style="background-color:#4285F4; color:white;" onclick="loginBanda()">
+                    <i class="fa-brands fa-google"></i> Entrar con Google
                 </button>
             </div>
         </div>
