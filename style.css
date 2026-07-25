@@ -920,6 +920,19 @@ hr.soft-separator {
     .tarjeta-pie {
         grid-template-columns: 1fr;
     }
+    .col-acciones:not(:empty) {
+        display: grid;
+        justify-content: end;
+        gap: 8px;
+        grid-column: 1 / -1;
+        padding-top: 8px;
+    }
+    .col-acciones > * {
+        display: none;
+    }
+    .col-acciones:not(:empty) > .btn-tarjeta-video {
+        display: inline-flex;
+    }
     .bottom-nav ul {
         grid-template-columns: repeat(4, 1fr);
     }
@@ -946,6 +959,22 @@ hr.soft-separator {
     }
     .btn {
         width: 100%;
+    }
+    .fila-cancion .fila-vista-botones {
+        width: 100%;
+    }
+    .fila-cancion .fila-vista-botones button {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+    .btn-tarjeta-ver {
+        width: 100%;
+    }
+    .btn-tarjeta-video {
+        min-width: auto;
+        height: auto;
+        width: 100%;
+        padding: 10px 14px;
     }
     .bottom-nav {
         padding: calc(10px + env(safe-area-inset-bottom)) 10px 10px;

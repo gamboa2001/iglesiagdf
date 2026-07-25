@@ -359,8 +359,8 @@ function renderizarTarjetas(lista) {
 
             const btnAcordes = document.createElement('button');
             btnAcordes.className = 'btn-tarjeta-ver';
-            btnAcordes.title = 'Abrir letra con acordes';
-            btnAcordes.innerHTML = `<i class="fa-solid fa-music"></i> <span>Letra + Acordes</span>`;
+            btnAcordes.title = 'Abrir acordes';
+            btnAcordes.innerHTML = `<i class="fa-solid fa-music"></i> <span>Acordes</span>`;
             btnAcordes.addEventListener('click', (e) => { e.stopPropagation(); abrirVistaCancion(cancion, 'acordes'); });
             right.appendChild(btnAcordes);
 
@@ -430,8 +430,8 @@ function renderizarTarjetas(lista) {
 
             const btnAcordesFila = document.createElement('button');
             btnAcordesFila.className = 'btn-tarjeta-ver';
-            btnAcordesFila.title = 'Abrir letra con acordes';
-            btnAcordesFila.innerHTML = `<i class="fa-solid fa-music"></i> <span>Letra + Acordes</span>`;
+            btnAcordesFila.title = 'Abrir acordes';
+            btnAcordesFila.innerHTML = `<i class="fa-solid fa-music"></i> <span>Acordes</span>`;
             btnAcordesFila.addEventListener('click', (e) => { e.stopPropagation(); abrirVistaCancion(cancion, 'acordes'); });
             botonesVista.appendChild(btnAcordesFila);
 
