@@ -70,6 +70,7 @@ button {
 .main {
     position: relative;
     min-height: 100vh;
+    padding-top: 0;
     padding-bottom: calc(88px + env(safe-area-inset-bottom));
     overflow-x: hidden;
 }
@@ -81,10 +82,11 @@ button {
 }
 
 .top-bar {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    margin: 0 auto;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    z-index: 30;
     width: min(1040px, calc(100% - 24px));
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
@@ -97,7 +99,7 @@ button {
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-    margin-top: 12px;
+    margin: 12px auto 0;
 }
 
 .top-bar-left {
@@ -911,27 +913,37 @@ hr.soft-separator {
     }
     .fila-cancion {
         grid-template-columns: minmax(72px, 90px) 1fr;
+        grid-template-rows: auto auto;
+        gap: 12px;
     }
     .col-tipo,
     .col-director,
     .col-acciones {
-        display: none;
+        display: block;
+        width: 100%;
+        margin-top: 8px;
+    }
+    .col-tipo {
+        display: flex;
+        justify-content: flex-start;
+    }
+    .col-director {
+        display: flex;
+        justify-content: flex-start;
+        color: var(--texto-secundario);
+        font-size: 0.95rem;
+        gap: 8px;
+        align-items: center;
+    }
+    .col-acciones {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+        padding-top: 0;
     }
     .tarjeta-pie {
         grid-template-columns: 1fr;
-    }
-    .col-acciones:not(:empty) {
-        display: grid;
-        justify-content: end;
-        gap: 8px;
-        grid-column: 1 / -1;
-        padding-top: 8px;
-    }
-    .col-acciones > * {
-        display: none;
-    }
-    .col-acciones:not(:empty) > .btn-tarjeta-video {
-        display: inline-flex;
     }
     .bottom-nav ul {
         grid-template-columns: repeat(4, 1fr);
@@ -949,6 +961,9 @@ hr.soft-separator {
     .top-bar {
         padding: calc(12px + env(safe-area-inset-top)) 14px 14px;
         border-radius: 20px;
+        width: calc(100% - 20px);
+        left: 50%;
+        transform: translateX(-50%);
     }
     .content-segment {
         border-radius: 20px;
