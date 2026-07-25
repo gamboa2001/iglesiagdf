@@ -48,6 +48,7 @@ let cargado = false;
 let ultimaEdicionTimestamp = 0; // Guarda el momento de la última modificación local
 let eventosEspecialesCache = [];
 let eventosEspecialesCargados = false;
+let cancionEnEdicion = null;
 
 // Notas para la transposición
 const notas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -676,6 +677,7 @@ function cerrarModalEditarCancion() {
     if (modalForm) modalForm.style.display = 'none';
     // limpiar estado de edición cuando se cierra
     editingOriginal = null;
+    cancionEnEdicion = null;
     const boton = document.getElementById('btn-guardar-editar');
     if (boton) boton.innerHTML = `<i class="fa-solid fa-pen"></i> Actualizar Canción`;
 }
@@ -790,6 +792,7 @@ function abrirEditarCancion(tituloOrCancion, artista) {
 
     // Guardar referencia para acciones de edición (incluyendo ID obligatorio de Google Sheets)
     editingOriginal = { id: cancion.id, titulo: cancion.titulo, artista: cancion.artista };
+    cancionEnEdicion = cancion;
     const boton = document.getElementById('btn-guardar-editar');
     if (boton) boton.innerHTML = `<i class="fa-solid fa-pen"></i> Actualizar Canción`;
     
@@ -895,6 +898,29 @@ function guardarEditarCancion(event) {
     });
 }
 
+function obtenerIdCancionActual() {
+    const ids = [
+        cancionEnEdicion?.id,
+        editingOriginal?.id,
+        document.getElementById('btn-eliminar-cancion')?.dataset?.cancionId
+    ];
+
+    for (const id of ids) {
+        if (id !== undefined && id !== null && id !== '') {
+            return String(id);
+        }
+    }
+
+    const titulo = (document.getElementById('editar-titulo')?.value || '').trim().toLowerCase();
+    const artista = (document.getElementById('editar-artista')?.value || '').trim().toLowerCase();
+    const match = todasLasCanciones.find(c =>
+        (c.titulo || '').trim().toLowerCase() === titulo &&
+        (c.artista || '').trim().toLowerCase() === artista
+    );
+
+    return match ? String(match.id) : null;
+}
+
 function eliminarCancion(id) {
     if (!isAdmin()) {
         alert('Solo administradores pueden eliminar canciones.');
@@ -902,16 +928,23 @@ function eliminarCancion(id) {
         return;
     }
 
-    const cancion = todasLasCanciones.find(c => c.id === id);
+    if (!id) {
+        alert('No se pudo identificar la canción para eliminar.');
+        return;
+    }
+
+    const cancion = todasLasCanciones.find(c => String(c.id) === String(id));
     const nombre = cancion ? cancion.titulo : 'esta canción';
     if (!confirm(`¿Deseas eliminar "${nombre}"?`)) return;
 
     const cancionRef = ref(db, `canciones/${id}`);
     remove(cancionRef)
         .then(() => {
-            todasLasCanciones = todasLasCanciones.filter(c => c.id !== id);
+            todasLasCanciones = todasLasCanciones.filter(c => String(c.id) !== String(id));
             localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
             filtrarYMostrar();
+            editingOriginal = null;
+            cancionEnEdicion = null;
             if (typeof cerrarModalEditarCancion === 'function') {
                 cerrarModalEditarCancion();
             }
@@ -930,14 +963,15 @@ function confirmarEliminarCancionDesdeModal() {
         return;
     }
 
-    if (!editingOriginal || !editingOriginal.id) {
+    const id = obtenerIdCancionActual();
+    if (!id) {
         alert('No se pudo identificar la canción para eliminar.');
         return;
     }
 
     const titulo = (document.getElementById('editar-titulo')?.value || '').trim() || 'esta canción';
     if (confirm(`¿Deseas eliminar "${titulo}" de la base de datos?`)) {
-        eliminarCancion(editingOriginal.id);
+        eliminarCancion(id);
     }
 }
 
@@ -969,6 +1003,17 @@ window.addEventListener('click', (event) => {
 window.addEventListener('DOMContentLoaded', () => {
     if (typeof actualizarUIAdmin === 'function') actualizarUIAdmin();
     if (typeof inicializarEventosEspeciales === 'function') inicializarEventosEspeciales();
+
+    const btnEliminarCancion = document.getElementById('btn-eliminar-cancion');
+    if (btnEliminarCancion) {
+        btnEliminarCancion.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof confirmarEliminarCancionDesdeModal === 'function') {
+                confirmarEliminarCancionDesdeModal();
+            }
+        });
+    }
 });
 
 /* ==========================================================================
