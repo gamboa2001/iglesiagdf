@@ -1,5 +1,45 @@
-// CONEXIÓN DIRECTA CORREGIDA: Apunta directo a Google de forma fija para romper el error 404 de Netlify
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzMXTIp8WybOhNZusrNyy8za3Z1iX0_Xw6U1kZHFCCl_KspczQenFhaDTw49kJiQb2r9g/exec";
+// Importar las funciones de Firebase a través de CDN (Versión modular para Vanilla JS)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, child, push, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// La configuración de tu proyecto Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCpisShEEkdNDH9YJ_E9lNPJGzTXyhLUhY",
+  authDomain: "iglesiagdf-b72cb.firebaseapp.com",
+  projectId: "iglesiagdf-b72cb",
+  storageBucket: "iglesiagdf-b72cb.firebasestorage.app",
+  messagingSenderId: "278985922070",
+  appId: "1:278985922070:web:f061cb1abc14397c55c737",
+  measurementId: "G-17XZQXJ9HQ"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+let analytics;
+try {
+  analytics = getAnalytics(app);
+} catch (e) {
+  console.warn("Analytics no disponible:", e);
+}
+
+// Lista de correos autorizados de la banda (actualiza con los correos reales)
+const bandaEmails = [
+    "integrante1@gmail.com",
+    "integrante2@gmail.com",
+    "integrante3@gmail.com",
+    "integrante4@gmail.com",
+    "integrante5@gmail.com",
+    "integrante6@gmail.com"
+];
+
+// Estado reactivo del usuario autenticado
+let currentUser = null;
 
 let todasLasCanciones = [];
 let cancionesFiltradas = [];
@@ -11,17 +51,11 @@ let ultimaEdicionTimestamp = 0; // Guarda el momento de la última modificación
 // Notas para la transposición
 const notas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-// ADMIN: contraseña por defecto (cámbiala en producción)
-const ADMIN_PASSWORD = 'admin123';
 const EVENTOS_ESPECIALES_KEY = 'gdf_eventosEspeciales';
 
+// Devuelve true si el usuario autenticado actual es miembro autorizado de la banda
 function isAdmin() {
-    return localStorage.getItem('gdf_isAdmin') === 'true';
-}
-
-function setAdmin(flag) {
-    localStorage.setItem('gdf_isAdmin', flag ? 'true' : 'false');
-    actualizarUIAdmin();
+    return currentUser !== null && bandaEmails.includes(currentUser.email);
 }
 
 function actualizarUIAdmin() {
@@ -50,41 +84,62 @@ function actualizarUIAdmin() {
     filtrarYMostrar();
 }
 
-function abrirAdminLogin() {
-    const modal = document.getElementById('modal-login-admin');
-    if (modal) modal.style.display = 'flex';
+// Inicia sesión con Google usando un popup y verifica el correo contra la lista de la banda
+async function loginBanda() {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const email = result.user.email;
+        if (bandaEmails.includes(email)) {
+            // onAuthStateChanged actualizará la UI automáticamente
+        } else {
+            alert('Acceso denegado: tu cuenta de Google no pertenece a la banda.');
+            await signOut(auth);
+        }
+    } catch (error) {
+        if (error.code !== 'auth/popup-closed-by-user') {
+            console.error('Error al iniciar sesión:', error);
+            alert('Error al iniciar sesión con Google. Intenta de nuevo.');
+        }
+    }
 }
 
+// Abre el login de Google (reemplaza el modal de contraseña)
+function abrirAdminLogin() {
+    loginBanda();
+}
+
+// Cierra la sesión de Google
+async function logoutAdmin() {
+    try {
+        await signOut(auth);
+        alert('Sesión de administrador cerrada.');
+    } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+    }
+}
+
+// Funciones vacías para compatibilidad con HTML legacy (modal de contraseña ya no se usa)
 function cerrarAdminLogin() {
     const modal = document.getElementById('modal-login-admin');
     if (modal) modal.style.display = 'none';
 }
-
 function intentarLogin(event) {
     event && event.preventDefault();
-    const input = document.getElementById('admin-password-input');
-    if (!input) return;
-    const value = input.value || '';
-    if (value === ADMIN_PASSWORD) {
-        setAdmin(true);
-        cerrarAdminLogin();
-        alert('Acceso concedido: modo administrador activado.');
-    } else {
-        alert('Contraseña incorrecta.');
-    }
+    loginBanda();
 }
 
-function logoutAdmin() {
-    setAdmin(false);
-    alert('Sesión de administrador cerrada.');
-}
+// Escuchar cambios de autenticación y actualizar la interfaz reactivamente
+onAuthStateChanged(auth, (user) => {
+    currentUser = user && bandaEmails.includes(user.email) ? user : null;
+    actualizarUIAdmin();
+});
 
-// Función auxiliar para asegurar que todas las canciones tengan un ID numérico válido (incluso si la caché local es antigua)
+// Función auxiliar para asegurar que todas las canciones tengan un ID válido
 function asegurarIDs(lista) {
     if (!Array.isArray(lista)) return [];
     return lista.map((c, index) => {
-        const idVal = (c.id !== undefined && c.id !== null && c.id !== '') ? Number(c.id) : (index + 1);
-        return Object.assign({}, c, { id: isNaN(idVal) ? (index + 1) : idVal });
+        const idVal = (c.id !== undefined && c.id !== null && c.id !== '') ? c.id : String(index + 1);
+        return Object.assign({}, c, { id: idVal });
     });
 }
 
@@ -92,22 +147,14 @@ function asegurarIDs(lista) {
 obtenerDatosSheets();
 
 function obtenerDatosSheets(forzarRecarga) {
-    // 1. Revisar si la caché tiene canciones sin ID y limpiarla si es necesario
     const cachedSongs = localStorage.getItem('gdf_canciones');
     if (cachedSongs) {
         try {
             const parsed = JSON.parse(cachedSongs);
-            // Si ninguna canción tiene ID, la caché es vieja — borrarla
-            const tieneTodosIDs = Array.isArray(parsed) && parsed.length > 0 && parsed.every(c => c.id !== undefined && c.id !== null && c.id !== '');
-            if (tieneTodosIDs && !forzarRecarga) {
+            if (Array.isArray(parsed) && parsed.length > 0 && !forzarRecarga) {
                 todasLasCanciones = asegurarIDs(parsed);
                 cargado = true;
                 filtrarYMostrar();
-            } else {
-                // Caché inválida o forzar recarga — limpiar y esperar datos frescos
-                console.log('Caché sin IDs detectada o recarga forzada — limpiando y recargando desde Google Sheets...');
-                localStorage.removeItem('gdf_canciones');
-                todasLasCanciones = [];
             }
         } catch (e) {
             console.error("Error al analizar canciones en caché:", e);
@@ -115,37 +162,37 @@ function obtenerDatosSheets(forzarRecarga) {
         }
     }
 
-    // 2. Si editamos hace menos de 15 segundos, no pedir datos viejos a Sheets
     if (!forzarRecarga && Date.now() - ultimaEdicionTimestamp < 15000) {
         return;
     }
 
-    // 3. Realizar la petición con parámetro anti-caché para refrescar los datos
-    const urlAntiCache = APPS_SCRIPT_URL + '?t=' + Date.now();
-    fetch(urlAntiCache)
-        .then(response => {
-            if (!response.ok) throw new Error("Error en la respuesta de la red");
-            return response.json();
-        })
-        .then(data => {
-            if (Array.isArray(data) && data.length > 0) {
-                if (!forzarRecarga && Date.now() - ultimaEdicionTimestamp < 15000) return;
-                const dataConIDs = asegurarIDs(data);
+    const dbRef = ref(db);
+    get(child(dbRef, 'canciones'))
+        .then((snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const lista = Object.keys(data).map(key => Object.assign({ id: key }, data[key]));
+                const dataConIDs = asegurarIDs(lista);
                 const dataStr = JSON.stringify(dataConIDs);
                 localStorage.setItem('gdf_canciones', dataStr);
                 todasLasCanciones = dataConIDs;
                 cargado = true;
                 filtrarYMostrar();
-                console.log('Datos frescos de Google Sheets cargados. Primera canción ID:', dataConIDs[0] && dataConIDs[0].id);
+                console.log('Datos frescos de Realtime Database cargados. Cantidad:', lista.length);
+            } else {
+                console.log("No hay canciones registradas.");
+                todasLasCanciones = [];
+                cargado = true;
+                filtrarYMostrar();
             }
         })
-        .catch(error => {
-            console.error("Error al obtener datos frescos:", error);
+        .catch((error) => {
+            console.error("Error al leer Realtime Database:", error);
             if (todasLasCanciones.length === 0) {
                 const contenedor = document.getElementById('contenedor-tarjetas');
                 if (contenedor) {
                     contenedor.innerHTML = `<p style="text-align:center; color:red; font-weight:bold; padding:20px;">
-                        Error al cargar el cancionero. Revisa la conexión con Google Sheets.
+                        Error al cargar el cancionero desde Realtime Database.
                     </p>`;
                 }
             }
@@ -305,7 +352,7 @@ function renderizarTarjetas(lista) {
                 btnRep.className = `btn-tarjeta-repertorio ${enRepertorio ? 'quitar' : 'agregar'}`;
                 btnRep.title = enRepertorio ? 'Quitar del repertorio' : 'Añadir al repertorio';
                 btnRep.innerHTML = `<i class="fa-solid ${enRepertorio ? 'fa-calendar-minus' : 'fa-calendar-plus'}"></i>`;
-                btnRep.addEventListener('click', (e) => { e.stopPropagation(); alternarDesdeTarjeta(cancion.titulo, cancion.artista, enRepertorio, btnRep); });
+                btnRep.addEventListener('click', (e) => { e.stopPropagation(); alternarDesdeTarjeta(cancion.id, enRepertorio, btnRep); });
                 right.appendChild(btnRep);
 
                 const btnEdit = document.createElement('button');
@@ -369,7 +416,7 @@ function renderizarTarjetas(lista) {
                 const a = document.createElement('a'); a.className = 'btn-tarjeta-video'; a.href = cancion.videoLink; a.target = '_blank'; a.title = 'Ver video de la canción'; a.addEventListener('click', (e)=> e.stopPropagation()); a.innerHTML = `<i class="fa-brands fa-youtube" style="color: #ff0000; font-size: 1.2rem;"></i>`; colAcc.appendChild(a);
             }
             if (isAdmin()) {
-                const btnRep = document.createElement('button'); btnRep.className = `btn-tarjeta-repertorio ${enRepertorio ? 'quitar' : 'agregar'}`; btnRep.title = enRepertorio ? 'Quitar del repertorio' : 'Añadir al repertorio'; btnRep.innerHTML = `<i class="fa-solid ${enRepertorio ? 'fa-calendar-minus' : 'fa-calendar-plus'}"></i>`; btnRep.addEventListener('click', (e)=>{ e.stopPropagation(); alternarDesdeTarjeta(cancion.titulo, cancion.artista, enRepertorio, btnRep); }); colAcc.appendChild(btnRep);
+                const btnRep = document.createElement('button'); btnRep.className = `btn-tarjeta-repertorio ${enRepertorio ? 'quitar' : 'agregar'}`; btnRep.title = enRepertorio ? 'Quitar del repertorio' : 'Añadir al repertorio'; btnRep.innerHTML = `<i class="fa-solid ${enRepertorio ? 'fa-calendar-minus' : 'fa-calendar-plus'}"></i>`; btnRep.addEventListener('click', (e)=>{ e.stopPropagation(); alternarDesdeTarjeta(cancion.id, enRepertorio, btnRep); }); colAcc.appendChild(btnRep);
                 const btnEdit = document.createElement('button'); btnEdit.className = 'btn-tarjeta-editar'; btnEdit.title = 'Editar canción'; btnEdit.innerHTML = `<i class="fa-solid fa-pen"></i>`; btnEdit.addEventListener('click', (e)=>{ e.stopPropagation(); abrirEditarCancion(cancion); }); colAcc.appendChild(btnEdit);
             }
 
@@ -532,48 +579,25 @@ function transponerNota(nota, semitonos) {
 }
 
 // --- GESTIÓN DE REPERTORIO SEMANAL ---
-function alternarDesdeTarjeta(titulo, artista, estadoActual, boton) {
+function alternarDesdeTarjeta(id, estadoActual, boton) {
     boton.disabled = true;
     const iconoOriginal = estadoActual ? 'fa-calendar-minus' : 'fa-calendar-plus';
     boton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
     
     const nuevoEstado = !estadoActual;
-    const datosModificados = {
-        action: "editarRepertorio", 
-        titulo: titulo,
-        artista: artista,
-        repertorioSemanal: nuevoEstado
-    };
+    const updates = {};
+    updates['/canciones/' + id] = { repertorioSemanal: nuevoEstado };
 
-    fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors", 
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(datosModificados)
-    })
+    update(ref(db), updates)
     .then(() => {
-        // Buscar por título+artista de forma tolerante (trim y lowercase)
-        const tituloNorm = (titulo || '').trim().toLowerCase();
-        const artistaNorm = (artista || '').trim().toLowerCase();
-        let index = todasLasCanciones.findIndex(c => {
-            const t = (c.titulo || '').trim().toLowerCase();
-            const a = (c.artista || '').trim().toLowerCase();
-            return t === tituloNorm && a === artistaNorm;
-        });
-        // fallback: buscar sólo por título si no se encontró con artista
-        if (index === -1) {
-            index = todasLasCanciones.findIndex(c => (c.titulo || '').trim().toLowerCase() === tituloNorm);
-        }
-
+        const index = todasLasCanciones.findIndex(c => c.id === id);
         if (index !== -1) {
             todasLasCanciones[index].repertorioSemanal = nuevoEstado;
+            localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
         } else {
-            console.warn('alternarDesdeTarjeta: no se encontró la canción en el array local', { titulo, artista });
-            // Forzar recarga de datos para mantener consistencia
-            setTimeout(obtenerDatosSheets, 800);
+            console.warn('alternarDesdeTarjeta: no se encontró la canción en el array local', id);
         }
 
-        // Restaurar estado del botón y re-renderizar
         try {
             boton.disabled = false;
             boton.innerHTML = `<i class="fa-solid ${nuevoEstado ? 'fa-calendar-minus' : 'fa-calendar-plus'}"></i>`;
@@ -582,8 +606,8 @@ function alternarDesdeTarjeta(titulo, artista, estadoActual, boton) {
         filtrarYMostrar();
     })
     .catch(error => {
-        console.error("Error al actualizar en Google Sheets:", error);
-        alert("No se pudo guardar en Google Sheets.");
+        console.error("Error al actualizar en Realtime Database:", error);
+        alert("No se pudo guardar en Realtime Database.");
         try {
             boton.disabled = false;
             boton.innerHTML = `<i class="fa-solid ${iconoOriginal}"></i>`;
@@ -631,7 +655,7 @@ function cerrarModalEditarCancion() {
 function guardarNuevaCancion(event) {
     event && event.preventDefault();
     if (!isAdmin()) {
-        alert('Solo administradores pueden crear o editar canciones.');
+        alert('Solo administradores pueden crear canciones.');
         cerrarModalNuevaCancion();
         return;
     }
@@ -656,46 +680,44 @@ function guardarNuevaCancion(event) {
         tipo: document.getElementById('nuevo-tipo') ? document.getElementById('nuevo-tipo').value : 'Alabanza',
         director: getValById('nuevo-director') || "Por asignar",
         letra: letraVal,
-        videoLink: getValById('nuevo-video')
+        videoLink: getValById('nuevo-video'),
+        repertorioSemanal: false
     };
 
-    const isEditing = editingOriginal !== null;
-    const datos = isEditing ? Object.assign({ action: 'editar', originalTitulo: editingOriginal.titulo, originalArtista: editingOriginal.artista }, payloadBase) : Object.assign({ action: 'crear' }, payloadBase);
-
-    // Si estamos creando una canción nueva, añadirla de inmediato al estado local
-    if (!isEditing && payloadBase.titulo) {
-        const nuevaObj = Object.assign({ repertorioSemanal: false }, payloadBase);
-        todasLasCanciones.push(nuevaObj);
-        localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
-        filtrarYMostrar();
+    if (!payloadBase.titulo || !payloadBase.artista) {
+        alert("El título y el artista son obligatorios.");
+        if (boton) {
+            boton.disabled = false;
+            boton.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Firestore`;
+        }
+        return;
     }
 
-    fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(datos)
-    })
+    const cancionesRef = ref(db, 'canciones');
+    const nuevaCancionRef = push(cancionesRef);
+
+    set(nuevaCancionRef, payloadBase)
     .then(() => {
-        console.log("Petición enviada.");
+        payloadBase.id = nuevaCancionRef.key;
+        todasLasCanciones.push(payloadBase);
+        localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
+        filtrarYMostrar();
+
         cerrarModalNuevaCancion();
         editingOriginal = null;
         if (boton) {
             boton.disabled = false;
-            boton.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Google Sheets`;
+            boton.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Realtime Database`;
         }
-        alert(isEditing ? "¡Canción actualizada con éxito!" : "¡Canción enviada con éxito!");
-        setTimeout(() => {
-            obtenerDatosSheets();
-        }, 1200);
+        alert("¡Canción guardada con éxito en Realtime Database!");
     })
     .catch(error => {
-        console.error("Error al crear/editar canción:", error);
+        console.error("Error al crear canción en Realtime Database:", error);
         alert("Hubo un problema al guardar la canción.");
         editingOriginal = null;
         if (boton) {
             boton.disabled = false;
-            boton.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Google Sheets`;
+            boton.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Realtime Database`;
         }
     });
 }
@@ -795,46 +817,47 @@ function guardarEditarCancion(event) {
         ? editingOriginal.id 
         : (index !== -1 ? todasLasCanciones[index].id : undefined);
 
-    if (index !== -1) {
-        todasLasCanciones[index] = Object.assign({}, todasLasCanciones[index], payloadBase, targetId !== undefined ? { id: targetId } : {});
-        localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
-        filtrarYMostrar();
-        if (cancionSeleccionada && (cancionSeleccionada.titulo === origTitulo || cancionSeleccionada.titulo === payloadBase.titulo)) {
-            cancionSeleccionada = todasLasCanciones[index];
-            const titEl = document.getElementById('cancion-titulo');
-            const artEl = document.getElementById('cancion-artista');
-            if (titEl) titEl.innerText = cancionSeleccionada.titulo;
-            if (artEl) artEl.innerText = cancionSeleccionada.artista;
-            actualizarBadgeTonoModal();
-            renderizarCuerpoCancion();
+    if (!targetId) {
+        alert("No se pudo determinar el ID de la canción para actualizar.");
+        if (boton) {
+            boton.disabled = false;
+            boton.innerHTML = `<i class="fa-solid fa-pen"></i> Actualizar Canción`;
         }
+        return;
     }
 
-    const datos = Object.assign({ 
-        action: 'editar', 
-        id: targetId,
-        originalTitulo: origTitulo, 
-        originalArtista: origArtista 
-    }, payloadBase);
+    const updates = {};
+    updates['/canciones/' + targetId] = payloadBase;
 
-    fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(datos)
-    })
+    update(ref(db), updates)
     .then(() => {
-        console.log("Petición de edición enviada exitosamente a Google Sheets con ID:", targetId);
+        console.log("Canción editada en Realtime Database con ID:", targetId);
+        
+        if (index !== -1) {
+            todasLasCanciones[index] = Object.assign({}, todasLasCanciones[index], payloadBase);
+            localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
+            filtrarYMostrar();
+            if (cancionSeleccionada && (cancionSeleccionada.titulo === origTitulo || cancionSeleccionada.titulo === payloadBase.titulo)) {
+                cancionSeleccionada = todasLasCanciones[index];
+                const titEl = document.getElementById('cancion-titulo');
+                const artEl = document.getElementById('cancion-artista');
+                if (titEl) titEl.innerText = cancionSeleccionada.titulo;
+                if (artEl) artEl.innerText = cancionSeleccionada.artista;
+                actualizarBadgeTonoModal();
+                renderizarCuerpoCancion();
+            }
+        }
+
         cerrarModalEditarCancion();
         editingOriginal = null;
         if (boton) {
             boton.disabled = false;
             boton.innerHTML = `<i class="fa-solid fa-pen"></i> Actualizar Canción`;
         }
-        alert("¡Canción actualizada con éxito en Google Sheets!");
+        alert("¡Canción actualizada con éxito en Realtime Database!");
     })
     .catch(error => {
-        console.error("Error al editar canción:", error);
+        console.error("Error al editar canción en Realtime Database:", error);
         alert("Hubo un problema al actualizar la canción.");
         editingOriginal = null;
         if (boton) {
@@ -1235,3 +1258,29 @@ function mostrarToastEventos(mensaje, tipo) {
         setTimeout(() => toast.remove(), 350);
     }, 2500);
 }
+
+// Exponer funciones necesarias al objeto global window para compatibilidad con eventos inline de HTML
+window.abrirModalEventosEspeciales = abrirModalEventosEspeciales;
+window.cerrarModalEventosEspeciales = cerrarModalEventosEspeciales;
+window.buscarCancionesParaEvento = buscarCancionesParaEvento;
+window.confirmarLimpiarEventos = confirmarLimpiarEventos;
+window.regresarALista = regresarALista;
+window.cambiarVistaCancion = cambiarVistaCancion;
+window.cambiarTono = cambiarTono;
+window.abrirAdminLogin = abrirAdminLogin;
+window.cerrarAdminLogin = cerrarAdminLogin;
+window.intentarLogin = intentarLogin;
+window.mostrarSeccion = mostrarSeccion;
+window.filtrarCanciones = filtrarCanciones;
+window.abrirModalNuevaCancion = abrirModalNuevaCancion;
+window.cerrarModalNuevaCancion = cerrarModalNuevaCancion;
+window.guardarNuevaCancion = guardarNuevaCancion;
+window.cerrarModalEditarCancion = cerrarModalEditarCancion;
+window.guardarEditarCancion = guardarEditarCancion;
+window.enviarNuevaCancion = enviarNuevaCancion;
+window.alternarDesdeTarjeta = alternarDesdeTarjeta;
+window.abrirEditarCancion = abrirEditarCancion;
+window.actualizarUIAdmin = actualizarUIAdmin;
+window.obtenerDatosSheets = obtenerDatosSheets; // Se mantiene por compatibilidad si se llama externamente
+window.loginBanda = loginBanda;
+window.logoutAdmin = logoutAdmin;
