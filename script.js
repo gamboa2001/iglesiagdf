@@ -90,6 +90,7 @@ async function loginBanda() {
         const result = await signInWithPopup(auth, provider);
         const email = result.user.email;
         if (bandaEmails.includes(email)) {
+            cerrarAdminLogin();
             // onAuthStateChanged actualizará la UI automáticamente
         } else {
             alert('Acceso denegado: tu cuenta de Google no pertenece a la banda.');
@@ -103,9 +104,12 @@ async function loginBanda() {
     }
 }
 
-// Abre el login de Google (reemplaza el modal de contraseña)
+// Abre el modal de login de Google para administradores
 function abrirAdminLogin() {
-    loginBanda();
+    const modal = document.getElementById('modal-login-admin');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
 }
 
 // Cierra la sesión de Google
