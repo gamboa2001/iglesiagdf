@@ -1,6 +1,6 @@
 // Importar las funciones de Firebase a través de CDN (Versión modular para Vanilla JS)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, get, child, push, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, get, child, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -33,8 +33,7 @@ const bandaEmails = [
     "integrante1@gmail.com",
     "integrante2@gmail.com",
     "integrante3@gmail.com",
-    "integrante4@gmail.com",
-    "adnresfarid2007@gmail.com",
+    "danielabonilla205@gmail.com",
     "gamboaisaac2001@gmail.com"
 ];
 
@@ -47,6 +46,8 @@ let vistaActual = 'canciones'; // 'canciones' o 'repertorio'
 let vistaCancionActual = 'letras';
 let cargado = false;
 let ultimaEdicionTimestamp = 0; // Guarda el momento de la última modificación local
+let eventosEspecialesCache = [];
+let eventosEspecialesCargados = false;
 
 // Notas para la transposición
 const notas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -150,6 +151,31 @@ function asegurarIDs(lista) {
 // Cargar datos automáticamente al enlazar el script
 obtenerDatosSheets();
 
+function procesarCancionesSnapshot(snapshot) {
+    if (!snapshot || !snapshot.exists()) {
+        todasLasCanciones = [];
+        cargado = true;
+        filtrarYMostrar();
+        return;
+    }
+
+    const data = snapshot.val();
+    let lista = [];
+
+    if (Array.isArray(data)) {
+        lista = data.map((c, index) => Object.assign({}, c, { id: c.id || String(index + 1) }));
+    } else if (data && typeof data === 'object') {
+        lista = Object.keys(data).map(key => Object.assign({ id: key }, data[key]));
+    }
+
+    const dataConIDs = asegurarIDs(lista);
+    localStorage.setItem('gdf_canciones', JSON.stringify(dataConIDs));
+    todasLasCanciones = dataConIDs;
+    cargado = true;
+    filtrarYMostrar();
+    console.log('Datos de canciones sincronizados desde Realtime Database. Cantidad:', dataConIDs.length);
+}
+
 function obtenerDatosSheets(forzarRecarga) {
     const cachedSongs = localStorage.getItem('gdf_canciones');
     if (cachedSongs) {
@@ -170,25 +196,15 @@ function obtenerDatosSheets(forzarRecarga) {
         return;
     }
 
-    const dbRef = ref(db);
-    get(child(dbRef, 'canciones'))
+    const cancionesRef = ref(db, 'canciones');
+
+    onValue(cancionesRef, (snapshot) => {
+        procesarCancionesSnapshot(snapshot);
+    });
+
+    get(cancionesRef)
         .then((snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                const lista = Object.keys(data).map(key => Object.assign({ id: key }, data[key]));
-                const dataConIDs = asegurarIDs(lista);
-                const dataStr = JSON.stringify(dataConIDs);
-                localStorage.setItem('gdf_canciones', dataStr);
-                todasLasCanciones = dataConIDs;
-                cargado = true;
-                filtrarYMostrar();
-                console.log('Datos frescos de Realtime Database cargados. Cantidad:', lista.length);
-            } else {
-                console.log("No hay canciones registradas.");
-                todasLasCanciones = [];
-                cargado = true;
-                filtrarYMostrar();
-            }
+            procesarCancionesSnapshot(snapshot);
         })
         .catch((error) => {
             console.error("Error al leer Realtime Database:", error);
@@ -365,6 +381,13 @@ function renderizarTarjetas(lista) {
                 btnEdit.innerHTML = `<i class="fa-solid fa-pen"></i>`;
                 btnEdit.addEventListener('click', (e) => { e.stopPropagation(); abrirEditarCancion(cancion); });
                 right.appendChild(btnEdit);
+
+                const btnDelete = document.createElement('button');
+                btnDelete.className = 'btn-tarjeta-repertorio quitar';
+                btnDelete.title = 'Eliminar canción';
+                btnDelete.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+                btnDelete.addEventListener('click', (e) => { e.stopPropagation(); eliminarCancion(cancion.id); });
+                right.appendChild(btnDelete);
             }
 
             pie.appendChild(left);
@@ -422,6 +445,7 @@ function renderizarTarjetas(lista) {
             if (isAdmin()) {
                 const btnRep = document.createElement('button'); btnRep.className = `btn-tarjeta-repertorio ${enRepertorio ? 'quitar' : 'agregar'}`; btnRep.title = enRepertorio ? 'Quitar del repertorio' : 'Añadir al repertorio'; btnRep.innerHTML = `<i class="fa-solid ${enRepertorio ? 'fa-calendar-minus' : 'fa-calendar-plus'}"></i>`; btnRep.addEventListener('click', (e)=>{ e.stopPropagation(); alternarDesdeTarjeta(cancion.id, enRepertorio, btnRep); }); colAcc.appendChild(btnRep);
                 const btnEdit = document.createElement('button'); btnEdit.className = 'btn-tarjeta-editar'; btnEdit.title = 'Editar canción'; btnEdit.innerHTML = `<i class="fa-solid fa-pen"></i>`; btnEdit.addEventListener('click', (e)=>{ e.stopPropagation(); abrirEditarCancion(cancion); }); colAcc.appendChild(btnEdit);
+                const btnDelete = document.createElement('button'); btnDelete.className = 'btn-tarjeta-repertorio quitar'; btnDelete.title = 'Eliminar canción'; btnDelete.innerHTML = `<i class="fa-solid fa-trash"></i>`; btnDelete.addEventListener('click', (e)=>{ e.stopPropagation(); eliminarCancion(cancion.id); }); colAcc.appendChild(btnDelete);
             }
 
             elemento.appendChild(colTono);
@@ -871,6 +895,31 @@ function guardarEditarCancion(event) {
     });
 }
 
+function eliminarCancion(id) {
+    if (!isAdmin()) {
+        alert('Solo administradores pueden eliminar canciones.');
+        abrirAdminLogin();
+        return;
+    }
+
+    const cancion = todasLasCanciones.find(c => c.id === id);
+    const nombre = cancion ? cancion.titulo : 'esta canción';
+    if (!confirm(`¿Deseas eliminar "${nombre}"?`)) return;
+
+    const cancionRef = ref(db, `canciones/${id}`);
+    remove(cancionRef)
+        .then(() => {
+            todasLasCanciones = todasLasCanciones.filter(c => c.id !== id);
+            localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
+            filtrarYMostrar();
+            alert('Canción eliminada correctamente.');
+        })
+        .catch((error) => {
+            console.error('Error al eliminar canción:', error);
+            alert('No se pudo eliminar la canción.');
+        });
+}
+
 // Función pública para la página completa (nueva-cancion.html)
 function enviarNuevaCancion() {
     if (!isAdmin()) {
@@ -903,11 +952,33 @@ window.addEventListener('DOMContentLoaded', () => {
 
 /* ==========================================================================
    MÓDULO: EVENTOS ESPECIALES
-   Gestiona una lista local de canciones para eventos especiales.
-   Los datos se persisten en localStorage bajo la clave 'gdf_eventosEspeciales'.
+   Gestiona la lista compartida de canciones para eventos especiales.
+   Se persiste en Realtime Database bajo la ruta 'eventosEspeciales'.
    ========================================================================== */
 
 function inicializarEventosEspeciales() {
+    const eventosRef = ref(db, 'eventosEspeciales');
+    onValue(eventosRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            if (Array.isArray(data)) {
+                eventosEspecialesCache = data;
+            } else if (data && typeof data === 'object') {
+                eventosEspecialesCache = Object.keys(data).map(key => Object.assign({ id: key }, data[key]));
+            } else {
+                eventosEspecialesCache = [];
+            }
+        } else {
+            eventosEspecialesCache = [];
+        }
+        eventosEspecialesCargados = true;
+        if (document.getElementById('modal-eventos-especiales')?.style.display === 'flex') {
+            renderizarListaEventos();
+        }
+    }, (error) => {
+        console.error('Error al sincronizar eventos especiales:', error);
+    });
+
     try {
         const raw = localStorage.getItem(EVENTOS_ESPECIALES_KEY);
         if (raw === null) {
@@ -915,40 +986,25 @@ function inicializarEventosEspeciales() {
         }
     } catch (e) {
         console.warn('No se pudo inicializar eventos especiales en localStorage.', e);
-        try {
-            const rawSession = sessionStorage.getItem(EVENTOS_ESPECIALES_KEY);
-            if (rawSession === null) {
-                sessionStorage.setItem(EVENTOS_ESPECIALES_KEY, JSON.stringify([]));
-            }
-        } catch (sessionError) {
-            console.error('No se pudo inicializar eventos especiales en sessionStorage.', sessionError);
-        }
     }
 }
 
 function obtenerEventosEspeciales() {
+    if (eventosEspecialesCargados) {
+        return Array.isArray(eventosEspecialesCache) ? eventosEspecialesCache : [];
+    }
+
     let raw = null;
     try {
         raw = localStorage.getItem(EVENTOS_ESPECIALES_KEY);
     } catch (e) {
-        console.warn('No se pudo leer eventos especiales desde localStorage, intentando sessionStorage.', e);
-    }
-
-    if (!raw) {
-        try {
-            raw = sessionStorage.getItem(EVENTOS_ESPECIALES_KEY);
-        } catch (e) {
-            console.warn('No se pudo leer eventos especiales desde sessionStorage.', e);
-            return [];
-        }
+        console.warn('No se pudo leer eventos especiales desde localStorage.', e);
     }
 
     if (!raw || raw.trim() === '') return [];
     try {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
-        console.warn('Eventos especiales almacenados no son un array:', parsed);
-        return [];
+        return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
         console.warn('Error leyendo eventos especiales desde storage:', e);
         return [];
@@ -960,17 +1016,20 @@ function guardarEventosEspeciales(lista) {
         console.warn('guardarEventosEspeciales recibió un valor inválido:', lista);
         return;
     }
-    const contenido = JSON.stringify(lista);
-    try {
-        localStorage.setItem(EVENTOS_ESPECIALES_KEY, contenido);
-    } catch (error) {
-        console.warn('No se pudo guardar eventos especiales en localStorage, intentando sessionStorage.', error);
-        try {
-            sessionStorage.setItem(EVENTOS_ESPECIALES_KEY, contenido);
-        } catch (secondaryError) {
-            console.error('No se pudo guardar eventos especiales en ninguna storage.', secondaryError);
-        }
-    }
+
+    const eventosRef = ref(db, 'eventosEspeciales');
+    set(eventosRef, lista)
+        .then(() => {
+            eventosEspecialesCache = lista;
+            localStorage.setItem(EVENTOS_ESPECIALES_KEY, JSON.stringify(lista));
+            if (document.getElementById('modal-eventos-especiales')?.style.display === 'flex') {
+                renderizarListaEventos();
+            }
+        })
+        .catch((error) => {
+            console.error('No se pudo guardar la lista de eventos especiales:', error);
+            alert('No se pudo guardar la lista compartida de eventos.');
+        });
 }
 
 window.addEventListener('storage', (event) => {
@@ -1115,7 +1174,7 @@ function crearTarjetaEventoEspecial(cancion, opciones = {}) {
         right.appendChild(a);
     }
 
-    if (opciones.mostrarQuitar) {
+    if (isAdmin() && opciones.mostrarQuitar) {
         const btnQuitar = document.createElement('button');
         btnQuitar.className = 'btn-tarjeta-repertorio quitar';
         btnQuitar.title = 'Quitar del evento';
@@ -1127,7 +1186,7 @@ function crearTarjetaEventoEspecial(cancion, opciones = {}) {
         right.appendChild(btnQuitar);
     }
 
-    if (opciones.mostrarAgregar) {
+    if (isAdmin() && opciones.mostrarAgregar) {
         const btnAgregar = document.createElement('button');
         btnAgregar.className = opciones.enEvento ? 'btn-tarjeta-repertorio quitar' : 'btn-tarjeta-repertorio agregar';
         btnAgregar.title = opciones.enEvento ? 'Ya está en el evento' : 'Añadir al evento';
@@ -1164,36 +1223,52 @@ function crearTarjetaEventoEspecial(cancion, opciones = {}) {
 }
 
 function agregarCancionAEventos(cancion) {
+    if (!isAdmin()) {
+        alert('Solo administradores pueden modificar la lista de eventos.');
+        abrirAdminLogin();
+        return;
+    }
+
     const lista = obtenerEventosEspeciales();
     const yaEsta = lista.some(c =>
         (c.titulo || '').trim().toLowerCase() === (cancion.titulo || '').trim().toLowerCase()
     );
     if (yaEsta) {
-        // Animar visualmente que ya está
         mostrarToastEventos('Ya está en la lista de Eventos Especiales', 'info');
         return;
     }
-    lista.push({
-        titulo: cancion.titulo || '',
-        artista: cancion.artista || '',
-        tonoOriginal: cancion.tonoOriginal || 'C',
-        tipo: cancion.tipo || '',
-        director: cancion.director || '',
-        videoLink: cancion.videoLink || '',
-        letra: cancion.letra || ''
-    });
-    guardarEventosEspeciales(lista);
+
+    const nuevaLista = [
+        ...lista,
+        {
+            titulo: cancion.titulo || '',
+            artista: cancion.artista || '',
+            tonoOriginal: cancion.tonoOriginal || 'C',
+            tipo: cancion.tipo || '',
+            director: cancion.director || '',
+            videoLink: cancion.videoLink || '',
+            letra: cancion.letra || ''
+        }
+    ];
+
+    guardarEventosEspeciales(nuevaLista);
     renderizarListaEventos();
-    buscarCancionesParaEvento(); // Refrescar resultados de búsqueda para actualizar el estado del botón
+    buscarCancionesParaEvento();
     mostrarToastEventos(`"${cancion.titulo}" añadida al evento`, 'ok');
 }
 
 function quitarCancionDeEventos(idx) {
+    if (!isAdmin()) {
+        alert('Solo administradores pueden modificar la lista de eventos.');
+        abrirAdminLogin();
+        return;
+    }
+
     const lista = obtenerEventosEspeciales();
     if (idx < 0 || idx >= lista.length) return;
     const titulo = lista[idx].titulo;
-    lista.splice(idx, 1);
-    guardarEventosEspeciales(lista);
+    const nuevaLista = lista.filter((_, index) => index !== idx);
+    guardarEventosEspeciales(nuevaLista);
     renderizarListaEventos();
     buscarCancionesParaEvento();
     mostrarToastEventos(`"${titulo}" quitada del evento`, 'warn');
