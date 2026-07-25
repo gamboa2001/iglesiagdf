@@ -292,9 +292,9 @@ function renderizarTarjetas(lista) {
 
     // Conmutamos la clase del contenedor de acuerdo a la pestaña seleccionada
     if (vistaActual === 'repertorio') {
-        contenedor.className = "modo-cartas";
+        contenedor.className = "contenedor-tarjetas-grid modo-cartas";
     } else {
-        contenedor.className = "modo-filas";
+        contenedor.className = "contenedor-tarjetas-grid modo-filas";
     }
 
     let tipoActual = null;
@@ -349,6 +349,7 @@ function renderizarTarjetas(lista) {
             right.style.display = 'flex';
             right.style.gap = '10px';
             right.style.alignItems = 'center';
+            right.style.flexWrap = 'wrap';
 
             const btnLetra = document.createElement('button');
             btnLetra.className = 'btn-tarjeta-ver';

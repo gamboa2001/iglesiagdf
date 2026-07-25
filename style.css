@@ -423,6 +423,8 @@ select:focus {
 }
 
 .modo-cartas {
+    display: grid;
+    gap: 16px;
     grid-template-columns: 1fr;
 }
 
@@ -483,6 +485,27 @@ select:focus {
 .tarjeta-pie {
     grid-template-columns: 1fr auto;
     align-items: center;
+}
+.tarjeta-pie > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.btn-tarjeta-repertorio,
+.btn-tarjeta-editar,
+.btn-tarjeta-video,
+.btn-tarjeta-ver {
+    min-width: 0;
+}
+
+.btn-tarjeta-repertorio,
+.btn-tarjeta-editar,
+.btn-tarjeta-video {
+    white-space: nowrap;
 }
 
 .fila-cancion {
@@ -944,6 +967,18 @@ hr.soft-separator {
     }
     .tarjeta-pie {
         grid-template-columns: 1fr;
+    }
+    .tarjeta-pie > div:last-child {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-start;
+    }
+    .btn-tarjeta-repertorio,
+    .btn-tarjeta-editar,
+    .btn-tarjeta-video,
+    .btn-tarjeta-ver {
+        min-width: 0;
     }
     .bottom-nav ul {
         grid-template-columns: repeat(4, 1fr);
