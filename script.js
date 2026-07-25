@@ -239,7 +239,7 @@ function mostrarSeccion(seccion) {
 
 function filtrarYMostrar() {
     if (vistaActual === 'repertorio') {
-        cancionesFiltradas = todasLasCanciones.filter(c => c.repertorioSemanal === true || c.repertorioSemanal === "true");
+        cancionesFiltradas = todasLasCanciones.filter(c => c.repertorioSemanal === true || c.repertorioSemanal === "true" || c.repertorioSemanal === 1 || c.repertorioSemanal === '1');
     } else {
         cancionesFiltradas = [...todasLasCanciones];
     }
@@ -622,10 +622,9 @@ function alternarDesdeTarjeta(id, estadoActual, boton) {
     boton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
     
     const nuevoEstado = !estadoActual;
-    const updates = {};
-    updates['/canciones/' + id] = { repertorioSemanal: nuevoEstado };
+    const cancionRef = ref(db, 'canciones/' + id);
 
-    update(ref(db), updates)
+    update(cancionRef, { repertorioSemanal: nuevoEstado })
     .then(() => {
         const index = todasLasCanciones.findIndex(c => c.id === id);
         if (index !== -1) {
