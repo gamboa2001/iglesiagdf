@@ -1584,25 +1584,62 @@ function loginBanda() {
 }
 
 function confirmarEliminarCancionDesdeModal() {
-    if (!isAdmin()) { abrirAdminLogin(); return; }
-    if (!confirm('¿Confirmar eliminación de esta canción?')) return;
-    const id = editingOriginal && editingOriginal.id;
-    if (id !== undefined) {
-        const datos = { action: 'eliminar', id: id };
-        fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(datos) })
-        .then(()=> {
-            // Actualizar estado local
-            todasLasCanciones = todasLasCanciones.filter(c => c.id !== id);
-            localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
-            cerrarModalEditarCancion();
-            filtrarYMostrar();
-            alert('Canción eliminada (petición enviada).');
-        }).catch(()=> {
-            alert('Error al solicitar eliminación.');
-        });
-    } else {
-        alert('No se pudo identificar la canción para eliminar.');
+    if (!isAdmin()) {
+        abrirAdminLogin();
+        return;
     }
+
+    if (!confirm('¿Estás seguro de que deseas eliminar esta canción?')) return;
+
+    const id = editingOriginal && editingOriginal.id;
+    const titulo = editingOriginal && editingOriginal.titulo;
+    const artista = editingOriginal && editingOriginal.artista;
+
+    if (id === undefined) {
+        alert('No se pudo identificar la canción para eliminar.');
+        return;
+    }
+
+    const eliminarLocalmente = () => {
+        todasLasCanciones = todasLasCanciones.filter(c => c.id !== id);
+        localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
+        filtrarYMostrar();
+        cerrarModalEditarCancion();
+    };
+
+    const eliminarEnFirestore = () => {
+        if (typeof firebase !== 'undefined' && firebase.firestore && cancionesRef) {
+            return cancionesRef.doc(String(id)).delete();
+        }
+        return Promise.reject(new Error('Firestore no disponible'));
+    };
+
+    const eliminarEnSheets = () => {
+        const datos = { action: 'eliminar', id: id, titulo: titulo, artista: artista };
+        return fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(datos)
+        });
+    };
+
+    eliminarEnFirestore()
+        .then(() => {
+            eliminarLocalmente();
+            alert('Canción eliminada correctamente de Firestore.');
+        })
+        .catch(() => {
+            return eliminarEnSheets()
+                .then(() => {
+                    eliminarLocalmente();
+                    alert('Canción eliminada. Se envió la solicitud de eliminación al backend.');
+                })
+                .catch((error) => {
+                    console.error('Error eliminando la canción:', error);
+                    alert('No se pudo eliminar la canción. Revisa la consola para más detalles.');
+                });
+        });
 }
 
 /* Exponer funciones al objeto global window para asegurar compatibilidad total con eventos en HTML */
