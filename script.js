@@ -32,6 +32,7 @@ let vistaActual = 'canciones'; // 'canciones' o 'repertorio'
 let vistaCancionActual = 'letras';
 let cargado = false;
 let ultimaEdicionTimestamp = 0; // Guarda el momento de la última modificación local
+let isSongOperationPending = false;
 
 // Notas para la transposición
 const notas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -830,9 +831,15 @@ function cerrarModalEditarCancion() {
 
 function guardarNuevaCancion(event) {
     event && event.preventDefault();
+    if (isSongOperationPending) {
+        return;
+    }
+    isSongOperationPending = true;
+
     if (!isAdmin()) {
         alert('Solo administradores pueden crear o editar canciones.');
         cerrarModalNuevaCancion();
+        isSongOperationPending = false;
         return;
     }
     
@@ -884,6 +891,7 @@ function guardarNuevaCancion(event) {
             boton.disabled = false;
             boton.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Google Sheets`;
         }
+        isSongOperationPending = false;
         alert(isEditing ? "¡Canción actualizada con éxito!" : "¡Canción enviada con éxito!");
         setTimeout(() => {
             obtenerDatosSheets();
@@ -897,6 +905,7 @@ function guardarNuevaCancion(event) {
             boton.disabled = false;
             boton.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Google Sheets`;
         }
+        isSongOperationPending = false;
     });
 }
 
@@ -951,10 +960,16 @@ function abrirEditarCancion(tituloOrCancion, artista) {
 // Función específica para guardar cambios de edición
 function guardarEditarCancion(event) {
     event && event.preventDefault();
+    if (isSongOperationPending) {
+        return;
+    }
+    isSongOperationPending = true;
+
     if (!isAdmin()) {
         alert('Solo administradores pueden editar canciones.');
         cerrarModalEditarCancion();
         abrirAdminLogin();
+        isSongOperationPending = false;
         return;
     }
 
@@ -1031,6 +1046,7 @@ function guardarEditarCancion(event) {
             boton.disabled = false;
             boton.innerHTML = `<i class="fa-solid fa-pen"></i> Actualizar Canción`;
         }
+        isSongOperationPending = false;
         alert("¡Canción actualizada con éxito en Google Sheets!");
     })
     .catch(error => {
@@ -1041,6 +1057,7 @@ function guardarEditarCancion(event) {
             boton.disabled = false;
             boton.innerHTML = `<i class="fa-solid fa-pen"></i> Actualizar Canción`;
         }
+        isSongOperationPending = false;
     });
 }
 
@@ -1189,13 +1206,22 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Formularios de nueva/editar canción: submit handlers
     const formNueva = document.getElementById('form-nueva-cancion');
-    if (formNueva) formNueva.addEventListener('submit', guardarNuevaCancion);
+    if (formNueva) {
+        formNueva.removeEventListener('submit', guardarNuevaCancion);
+        formNueva.addEventListener('submit', guardarNuevaCancion);
+    }
     const formEditar = document.getElementById('form-editar-cancion');
-    if (formEditar) formEditar.addEventListener('submit', guardarEditarCancion);
+    if (formEditar) {
+        formEditar.removeEventListener('submit', guardarEditarCancion);
+        formEditar.addEventListener('submit', guardarEditarCancion);
+    }
 
     // Botón eliminar desde modal editar
     const btnEliminar = document.getElementById('btn-eliminar-cancion');
-    if (btnEliminar) btnEliminar.addEventListener('click', confirmarEliminarCancionDesdeModal);
+    if (btnEliminar) {
+        btnEliminar.removeEventListener('click', confirmarEliminarCancionDesdeModal);
+        btnEliminar.addEventListener('click', confirmarEliminarCancionDesdeModal);
+    }
 });
 
 /* ==========================================================================
@@ -1584,12 +1610,21 @@ function loginBanda() {
 }
 
 function confirmarEliminarCancionDesdeModal() {
+    if (isSongOperationPending) {
+        return;
+    }
+    isSongOperationPending = true;
+
     if (!isAdmin()) {
         abrirAdminLogin();
+        isSongOperationPending = false;
         return;
     }
 
-    if (!confirm('¿Estás seguro de que deseas eliminar esta canción?')) return;
+    if (!confirm('¿Estás seguro de que deseas eliminar esta canción?')) {
+        isSongOperationPending = false;
+        return;
+    }
 
     const id = editingOriginal && editingOriginal.id;
     const titulo = editingOriginal && editingOriginal.titulo;
@@ -1597,6 +1632,7 @@ function confirmarEliminarCancionDesdeModal() {
 
     if (id === undefined) {
         alert('No se pudo identificar la canción para eliminar.');
+        isSongOperationPending = false;
         return;
     }
 
@@ -1628,16 +1664,19 @@ function confirmarEliminarCancionDesdeModal() {
         .then(() => {
             eliminarLocalmente();
             alert('Canción eliminada correctamente de Firestore.');
+            isSongOperationPending = false;
         })
         .catch(() => {
             return eliminarEnSheets()
                 .then(() => {
                     eliminarLocalmente();
                     alert('Canción eliminada. Se envió la solicitud de eliminación al backend.');
+                    isSongOperationPending = false;
                 })
                 .catch((error) => {
                     console.error('Error eliminando la canción:', error);
                     alert('No se pudo eliminar la canción. Revisa la consola para más detalles.');
+                    isSongOperationPending = false;
                 });
         });
 }
