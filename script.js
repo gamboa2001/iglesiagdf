@@ -265,8 +265,34 @@ function asegurarIDs(lista) {
 // Detectar vista desde URL al cargar
 detectarVistaDesdeURL();
 
-// Cargar datos automáticamente al enlazar el script
-obtenerDatosSheets();
+// Inicializar autenticación anónima (si el SDK de Auth está disponible)
+// y cargar los datos solo después de autenticación para cumplir reglas con `auth != null`.
+try {
+    if (window.firebase && firebase.auth) {
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                console.log('Usuario autenticado (anon/cred):', user && user.uid);
+                // Cargar datos ahora que estamos autenticados
+                try { obtenerDatosSheets(); } catch (e) { console.warn('Error llamando obtenerDatosSheets tras auth:', e); }
+            } else {
+                // Intentar inicio de sesión anónimo
+                firebase.auth().signInAnonymously().then(() => {
+                    console.log('Inicio de sesión anónimo solicitado');
+                }).catch(err => {
+                    console.warn('signInAnonymously falló:', err);
+                    // Intentar cargar datos aunque falle (mostrará error si las reglas exigen auth)
+                    try { obtenerDatosSheets(); } catch (e) { console.warn('Fallback obtenerDatosSheets error:', e); }
+                });
+            }
+        });
+    } else {
+        // No hay Auth SDK; intentar cargar datos de todas formas (reglas públicas o error)
+        obtenerDatosSheets();
+    }
+} catch (e) {
+    console.warn('Error inicializando Auth flow:', e);
+    try { obtenerDatosSheets(); } catch (er) { console.warn('Error fallback obtenerDatosSheets:', er); }
+}
 
 function obtenerDatosSheets(forzarRecarga) {
     // 1. Revisar si la caché tiene canciones sin ID y limpiarla si es necesario
