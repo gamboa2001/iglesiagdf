@@ -84,12 +84,16 @@ function actualizarUIAdmin() {
 
 function abrirAdminLogin() {
     const modal = document.getElementById('modal-login-admin');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.classList.add('modal-abierto');
+    }
 }
 
 function cerrarAdminLogin() {
     const modal = document.getElementById('modal-login-admin');
     if (modal) modal.style.display = 'none';
+    document.body.classList.remove('modal-abierto');
 }
 
 function abrirModalCirculoQuintas() {
@@ -97,6 +101,7 @@ function abrirModalCirculoQuintas() {
     const boton = document.getElementById('btn-circulo-quintas');
     if (modal) {
         modal.style.display = 'flex';
+        document.body.classList.add('modal-abierto');
         if (boton) boton.setAttribute('aria-expanded', 'true');
     }
 }
@@ -106,6 +111,7 @@ function cerrarModalCirculoQuintas() {
     const boton = document.getElementById('btn-circulo-quintas');
     if (modal) modal.style.display = 'none';
     if (boton) boton.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('modal-abierto');
 }
 
 window.abrirModalCirculoQuintas = abrirModalCirculoQuintas;
@@ -548,7 +554,10 @@ function abrirVistaCancion(cancion, vista) {
     renderizarCuerpoCancion();
 
     const modal = document.getElementById('vista-cancion');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.classList.add('modal-abierto');
+    }
 }
 
 // --- LOGICA DEL VISOR MODAL ---
@@ -572,7 +581,10 @@ function verCancion(cancion) {
     renderizarCuerpoCancion();
     
     const modal = document.getElementById('vista-cancion');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.classList.add('modal-abierto');
+    }
 }
 
 function cambiarVistaCancion(vista) {
@@ -592,6 +604,7 @@ function actualizarBotonesVistaCancion() {
 function regresarALista() {
     const modal = document.getElementById('vista-cancion');
     if (modal) modal.style.display = 'none';
+    document.body.classList.remove('modal-abierto');
 }
 
 function renderizarCuerpoCancion() {
@@ -1004,9 +1017,10 @@ function enviarNuevaCancion() {
 }
 
 // Cerrar modales haciendo clic en el fondo translúcido fuera del formulario
-window.addEventListener('click', (event) => {
+function cerrarModalPorFondo(event) {
     if (event.target && event.target.classList && event.target.classList.contains('modal-fondo')) {
         event.target.style.display = 'none';
+        document.body.classList.remove('modal-abierto');
         if (event.target.id === 'modal-nueva-cancion' || event.target.id === 'modal-editar-cancion') {
             editingOriginal = null;
         }
@@ -1021,6 +1035,14 @@ window.addEventListener('click', (event) => {
             cerrarModalEscalaCancion();
         }
     }
+}
+window.addEventListener('click', cerrarModalPorFondo);
+window.addEventListener('touchend', (e) => {
+    // Sólo si el toque termina directamente sobre el fondo del modal (no sobre el contenido)
+    const el = e.changedTouches && e.changedTouches[0] ? document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY) : null;
+    if (el && el.classList && el.classList.contains('modal-fondo')) {
+        cerrarModalPorFondo({ target: el });
+    }
 });
 
 // Inicializar estado admin al cargar cualquier página que incluya este script
@@ -1028,13 +1050,22 @@ window.addEventListener('DOMContentLoaded', () => {
     if (typeof actualizarUIAdmin === 'function') actualizarUIAdmin();
     if (typeof inicializarEventosEspeciales === 'function') inicializarEventosEspeciales();
 
-    const btnEventos = document.getElementById('btn-eventos-especiales-card');
-    if (btnEventos) {
-        btnEventos.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            abrirModalEventosEspeciales();
-        });
-    }
+    // Añadir touchend a todos los botones interactivos para máxima compatibilidad móvil
+    const touchMap = [
+        ['btn-eventos-especiales-card', abrirModalEventosEspeciales],
+        ['btn-circulo-quintas', abrirModalCirculoQuintas],
+        ['link-admin', abrirAdminLogin],
+        ['link-admin-bottom', abrirAdminLogin],
+    ];
+    touchMap.forEach(([id, fn]) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                fn();
+            }, { passive: false });
+        }
+    });
 });
 
 /* ==========================================================================
@@ -1122,6 +1153,7 @@ function abrirModalEventosEspeciales() {
     const modal = document.getElementById('modal-eventos-especiales');
     if (modal) {
         modal.style.display = 'flex';
+        document.body.classList.add('modal-abierto');
         renderizarListaEventos();
         limpiarBuscadorEventos();
     }
@@ -1130,6 +1162,7 @@ function abrirModalEventosEspeciales() {
 function cerrarModalEventosEspeciales() {
     const modal = document.getElementById('modal-eventos-especiales');
     if (modal) modal.style.display = 'none';
+    document.body.classList.remove('modal-abierto');
     limpiarBuscadorEventos();
 }
 
