@@ -1,6 +1,48 @@
 // CONEXIÓN DIRECTA CORREGIDA: Apunta directo a Google de forma fija para romper el error 404 de Netlify
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzMXTIp8WybOhNZusrNyy8za3Z1iX0_Xw6U1kZHFCCl_KspczQenFhaDTw49kJiQb2r9g/exec";
 
+/* ========================================
+   CONFIGURACIÓN E INICIALIZACIÓN FIREBASE
+   ======================================== */
+// Usa la configuración que pegaste en la conversación
+const firebaseConfig = {
+  apiKey: "AIzaSyCpisShEEkdNDH9YJ_E9lNPJGzTXyhLUhY",
+  authDomain: "iglesiagdf-b72cb.firebaseapp.com",
+  databaseURL: "https://iglesiagdf-b72cb-default-rtdb.firebaseio.com",
+  projectId: "iglesiagdf-b72cb",
+  storageBucket: "iglesiagdf-b72cb.firebasestorage.app",
+  messagingSenderId: "278985922070",
+  appId: "1:278985922070:web:f061cb1abc14397c55c737",
+  measurementId: "G-17XZQXJ9HQ"
+};
+
+// Provider global (se asigna si Firebase está disponible)
+let googleProvider = null;
+let cancionesRef = null;
+
+if (typeof firebase !== 'undefined') {
+  try {
+    if (!firebase.apps || firebase.apps.length === 0) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    // Firestore helper
+    const db = firebase.firestore();
+    cancionesRef = db.collection('canciones');
+
+    // Provider de Google
+    googleProvider = new firebase.auth.GoogleAuthProvider();
+
+    // Escuchar cambios de auth y actualizar UI
+    firebase.auth().onAuthStateChanged((user) => {
+      setAdmin(!!user);
+    });
+  } catch (e) {
+    console.warn('Error inicializando Firebase:', e);
+  }
+} else {
+  console.warn('Firebase SDK no encontrado. Asegúrate de cargar los scripts de Firebase antes de script.js');
+}
+
 let todasLasCanciones = [];
 let cancionesFiltradas = [];
 let vistaActual = 'canciones'; // 'canciones' o 'repertorio'
@@ -226,8 +268,22 @@ function intentarLogin(event) {
 }
 
 function logoutAdmin() {
-    setAdmin(false);
-    alert('Sesión de administrador cerrada.');
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().signOut()
+            .then(() => {
+                setAdmin(false);
+                alert('Sesión cerrada.');
+            })
+            .catch((err) => {
+                console.error('Error cerrando sesión Firebase:', err);
+                // Fallback
+                setAdmin(false);
+                alert('Sesión cerrada.');
+            });
+    } else {
+        setAdmin(false);
+        alert('Sesión de administrador cerrada.');
+    }
 }
 
 // Función auxiliar para asegurar que todas las canciones tengan un ID numérico válido (incluso si la caché local es antigua)
@@ -1506,9 +1562,23 @@ function mostrarToastEventos(mensaje, tipo) {
 
 // Stub for loginBanda if not implemented yet (keeps backward compatibility with inline handlers)
 function loginBanda() {
-    // Placeholder: if Google login flow is not implemented, open admin login modal as fallback
-    console.warn('loginBanda() called but not implemented — opening admin login modal as fallback.');
-    abrirAdminLogin();
+    if (typeof firebase === 'undefined') {
+        alert('Firebase no está disponible. Asegúrate de que los scripts de Firebase estén cargados.');
+        abrirAdminLogin();
+        return;
+    }
+    const provider = googleProvider || new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+            const user = result.user;
+            setAdmin(true);
+            cerrarAdminLogin();
+            alert(`Bienvenido, ${user.displayName || 'Admin'}`);
+        })
+        .catch((error) => {
+            console.error('Error al autenticar con Google:', error);
+            alert('No se pudo iniciar sesión con Google.');
+        });
 }
 
 function confirmarEliminarCancionDesdeModal() {
