@@ -360,6 +360,13 @@ button {
     box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
     transition: transform var(--transition-speed), border-color var(--transition-speed), background-color var(--transition-speed);
     color: var(--texto-principal);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.action-card * {
+    pointer-events: none;
 }
 
 .action-card:hover {
@@ -825,6 +832,7 @@ select:focus {
 }
 
 .modal-contenido {
+    position: relative;
     width: min(1020px, 100%);
     background: rgba(255,255,255,0.9);
     border-radius: 28px 28px 20px 20px;
@@ -851,16 +859,21 @@ select:focus {
 
 .btn-cerrar {
     position: absolute;
-    top: 18px;
-    right: 18px;
-    width: 42px;
-    height: 42px;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
     border-radius: 14px;
     display: grid;
     place-items: center;
     color: var(--texto-secundario);
     transition: background var(--transition-speed), color var(--transition-speed);
-    background: rgba(255,255,255,0.8);
+    background: rgba(0, 0, 0, 0.06);
+    border: none;
+    cursor: pointer;
+    z-index: 20;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn-cerrar:hover {

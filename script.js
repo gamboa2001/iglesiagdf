@@ -1027,6 +1027,14 @@ window.addEventListener('click', (event) => {
 window.addEventListener('DOMContentLoaded', () => {
     if (typeof actualizarUIAdmin === 'function') actualizarUIAdmin();
     if (typeof inicializarEventosEspeciales === 'function') inicializarEventosEspeciales();
+
+    const btnEventos = document.getElementById('btn-eventos-especiales-card');
+    if (btnEventos) {
+        btnEventos.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            abrirModalEventosEspeciales();
+        });
+    }
 });
 
 /* ==========================================================================
@@ -1390,3 +1398,36 @@ function mostrarToastEventos(mensaje, tipo) {
         setTimeout(() => toast.remove(), 350);
     }, 2500);
 }
+
+/* Exponer funciones al objeto global window para asegurar compatibilidad total con eventos en HTML */
+Object.assign(window, {
+    abrirAdminLogin,
+    cerrarAdminLogin,
+    loginBanda,
+    abrirModalCirculoQuintas,
+    cerrarModalCirculoQuintas,
+    abrirModalEscalaCancion,
+    cerrarModalEscalaCancion,
+    intentarLogin,
+    logoutAdmin,
+    mostrarSeccion,
+    filtrarYMostrar,
+    filtrarCanciones,
+    abrirVistaCancion,
+    verCancion,
+    cambiarVistaCancion,
+    regresarALista,
+    cambiarTono,
+    abrirModalNuevaCancion,
+    cerrarModalNuevaCancion,
+    abrirEditarCancion,
+    cerrarModalEditarCancion,
+    guardarNuevaCancion,
+    guardarEditarCancion,
+    confirmarEliminarCancionDesdeModal,
+    abrirModalEventosEspeciales,
+    cerrarModalEventosEspeciales,
+    buscarCancionesParaEvento,
+    confirmarLimpiarEventos,
+    alternarDesdeTarjeta
+});
