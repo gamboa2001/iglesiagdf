@@ -1556,6 +1556,10 @@ function buscarCancionesParaEvento() {
     contenedor.innerHTML = '';
 
     if (texto.length < 1) return;
+    if (todasLasCanciones.length === 0) {
+        contenedor.innerHTML = `<p style="text-align:center; color:var(--texto-secundario); padding:10px; font-size:0.9rem;">Aún no se han cargado canciones. Recarga la página y espera a que Firebase cargue el cancionero.</p>`;
+        return;
+    }
 
     const listaEventos = obtenerEventosEspeciales();
     const idsEnEvento = new Set(listaEventos.map(c => (c.titulo || '').trim().toLowerCase()));
