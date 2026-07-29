@@ -20,11 +20,11 @@
             <h1 id="titulo-lista">Cargando canciones...</h1>
         </div>
         <div class="top-bar-actions">
-            <button id="btn-circulo-quintas" class="icon-button" type="button" onclick="abrirModalCirculoQuintas()" aria-haspopup="dialog" aria-controls="modal-circulo-quintas" aria-expanded="false">
+            <button id="btn-circulo-quintas" class="icon-button" type="button" aria-haspopup="dialog" aria-controls="modal-circulo-quintas" aria-expanded="false">
                 <i class="fa-solid fa-sliders"></i>
                 <span class="button-label">Modos</span>
             </button>
-            <button id="link-admin" class="icon-button" type="button" onclick="abrirAdminLogin()">
+            <button id="link-admin" class="icon-button" type="button">
                 <i class="fa-solid fa-user"></i>
                 <span class="button-label">Admin</span>
             </button>
@@ -35,8 +35,8 @@
         <section class="list-panel content-segment">
             <div class="buscador-contenedor">
                 <div style="display:grid; gap:14px;">
-                    <input type="text" id="buscador" oninput="filtrarCanciones()" placeholder="Buscar canción por título o artista...">
-                    <button id="btn-nueva-cancion" class="btn btn-secondary" data-admin-only="true" onclick="abrirModalNuevaCancion()" style="display:none; width: fit-content;"> <i class="fa-solid fa-plus"></i> Nueva Canción</button>
+                    <input type="text" id="buscador" placeholder="Buscar canción por título o artista...">
+                    <button id="btn-nueva-cancion" class="btn btn-secondary" data-admin-only="true" style="display:none; width: fit-content;"> <i class="fa-solid fa-plus"></i> Nueva Canción</button>
                 </div>
             </div>
             <div id="contenedor-tarjetas" class="contenedor-tarjetas-grid"></div>
@@ -45,7 +45,7 @@
 
     <div id="modal-circulo-quintas" class="modal-fondo" style="display: none;">
         <div class="modal-contenido modal-circulo-quintas-card" role="dialog" aria-modal="true" aria-labelledby="circulo-quintas-title">
-            <button class="btn-cerrar" type="button" onclick="cerrarModalCirculoQuintas()">&times;</button>
+            <button class="btn-cerrar" type="button">&times;</button>
             <div class="circulo-quintas-header">
                 <div class="circulo-quintas-icon"><i class="fa-solid fa-sliders"></i></div>
                 <div>
@@ -150,18 +150,18 @@
             <li><a href="index.html" class="tab-item"><i class="fa-solid fa-house"></i><span>Inicio</span></a></li>
             <li><a href="cancionero.html?vista=repertorio" class="tab-item"><i class="fa-solid fa-layer-group"></i><span>Repertorio</span></a></li>
             <li><a href="cancionero.html?vista=canciones" class="tab-item active"><i class="fa-solid fa-music"></i><span>Canciones</span></a></li>
-            <li><button id="link-admin-bottom" class="tab-item" type="button" onclick="abrirAdminLogin()"><i class="fa-solid fa-user"></i><span>Admin</span></button></li>
+            <li><button id="link-admin-bottom" class="tab-item" type="button"><i class="fa-solid fa-user"></i><span>Admin</span></button></li>
         </ul>
     </nav>
 
     <div id="modal-login-admin" class="modal-fondo" style="display: none;">
         <div class="modal-contenido formulario-modal">
             <div class="sheet-handle"></div>
-            <button class="btn-cerrar" onclick="cerrarAdminLogin()">&times;</button>
+            <button class="btn-cerrar">&times;</button>
             <h3>Acceso de Administrador</h3>
             <p style="margin-bottom: 20px; color: var(--texto-secundario);">Inicia sesión con tu cuenta de Google autorizada de la banda.</p>
             <div style="display:flex; justify-content:center; margin-top:8px;">
-                <button type="button" class="btn" style="background-color:#4285F4; color:white;" onclick="loginBanda()">
+                <button type="button" id="btn-login-banda" class="btn" style="background-color:#4285F4; color:white;">
                     <i class="fa-brands fa-google"></i> Entrar con Google
                 </button>
             </div>
@@ -171,19 +171,19 @@
     <div id="vista-cancion" class="modal-fondo" style="display: none;">
         <div class="modal-contenido">
             <div class="sheet-handle"></div>
-            <button class="btn-cerrar" onclick="regresarALista()">&times;</button>
+            <button class="btn-cerrar">&times;</button>
             <h2 id="cancion-titulo">Título</h2>
             <h3 id="cancion-artista" style="color: var(--texto-secundario); margin-top: 4px; font-weight: 600;">Artista</h3>
             <div class="controles-vista-cancion" role="group" aria-label="Vista de la canción">
-                <button type="button" class="btn-vista-cancion active" data-vista="letras" onclick="cambiarVistaCancion('letras')">Letras</button>
-                <button type="button" class="btn-vista-cancion" data-vista="acordes" onclick="cambiarVistaCancion('acordes')">Acordes</button>
+                <button type="button" class="btn-vista-cancion active" data-vista="letras">Letras</button>
+                <button type="button" class="btn-vista-cancion" data-vista="acordes">Acordes</button>
             </div>
             <div class="controles-tono" id="controles-tono-bloque">
                 <span>Cambiar tono</span>
                 <div style="display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap: wrap;">
-                    <button onclick="cambiarTono(-1)">- ½ Tono</button>
-                    <button id="tono-actual" class="badge-tono" type="button" onclick="abrirModalEscalaCancion()" style="cursor: pointer; border: none; padding: 10px 14px; background: rgba(0,122,255,0.14); border-radius: 999px; color: var(--azul-identidad); font-weight: 700; transition: all 250ms;">C</button>
-                    <button onclick="cambiarTono(1)">+ ½ Tono</button>
+                    <button data-cambiar-tono="-1">- ½ Tono</button>
+                    <button id="tono-actual" class="badge-tono" type="button" style="cursor: pointer; border: none; padding: 10px 14px; background: rgba(0,122,255,0.14); border-radius: 999px; color: var(--azul-identidad); font-weight: 700; transition: all 250ms;">C</button>
+                    <button data-cambiar-tono="1">+ ½ Tono</button>
                 </div>
             </div>
             <pre id="cancion-cuerpo"></pre>
@@ -192,7 +192,7 @@
 
     <div id="modal-escala-cancion" class="modal-fondo" style="display: none;">
         <div class="modal-contenido modal-circulo-quintas-card" role="dialog" aria-modal="true" aria-labelledby="escala-titulo">
-            <button class="btn-cerrar" type="button" onclick="cerrarModalEscalaCancion()">&times;</button>
+            <button class="btn-cerrar" type="button">&times;</button>
             <div class="circulo-quintas-header">
                 <div class="circulo-quintas-icon"><i class="fa-solid fa-music"></i></div>
                 <div>
@@ -223,10 +223,10 @@
     <div id="modal-nueva-cancion" class="modal-fondo" style="display: none;">
         <div class="modal-contenido formulario-modal">
             <div class="sheet-handle"></div>
-            <button class="btn-cerrar" onclick="cerrarModalNuevaCancion()">&times;</button>
+            <button class="btn-cerrar">&times;</button>
             <h2>Añadir Nueva Canción</h2>
             <p style="margin-bottom: 20px; color: var(--texto-secundario);">Completa los datos para guardarla en la base de datos.</p>
-            <form id="form-nueva-cancion" onsubmit="guardarNuevaCancion(event)">
+            <form id="form-nueva-cancion">
                 <div class="grupo-campo">
                     <label>Título de la Canción *</label>
                     <input type="text" id="nuevo-titulo" required placeholder="Ej: Cuan Grande es Él">
@@ -268,10 +268,10 @@
     <div id="modal-editar-cancion" class="modal-fondo" style="display: none;">
         <div class="modal-contenido formulario-modal">
             <div class="sheet-handle"></div>
-            <button class="btn-cerrar" onclick="cerrarModalEditarCancion()">&times;</button>
+            <button class="btn-cerrar">&times;</button>
             <h2>Editar Canción</h2>
             <p style="margin-bottom: 20px; color: var(--texto-secundario);">Modifica los datos de la canción.</p>
-            <form id="form-editar-cancion" onsubmit="guardarEditarCancion(event)">
+            <form id="form-editar-cancion">
                 <div class="grupo-campo">
                     <label>Título de la Canción *</label>
                     <input type="text" id="editar-titulo" required placeholder="Ej: Cuan Grande es Él">
@@ -310,7 +310,7 @@
                 <button type="submit" id="btn-guardar-editar" class="btn-enviar-form">
                     <i class="fa-solid fa-pen"></i> Actualizar Canción
                 </button>
-                <button type="button" id="btn-eliminar-cancion" class="btn btn-secondary" style="margin-top: 10px; width: 100%;" onclick="confirmarEliminarCancionDesdeModal()">
+                <button type="button" id="btn-eliminar-cancion" class="btn btn-secondary" style="margin-top: 10px; width: 100%;">
                     <i class="fa-solid fa-trash"></i> Eliminar Canción
                 </button>
             </form>

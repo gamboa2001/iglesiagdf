@@ -1066,6 +1066,78 @@ window.addEventListener('DOMContentLoaded', () => {
             }, { passive: false });
         }
     });
+
+    // --- Migración de manejadores inline a listeners modernos ---
+    const buscador = document.getElementById('buscador');
+    if (buscador) buscador.addEventListener('input', filtrarCanciones);
+
+    const btnCirculo = document.getElementById('btn-circulo-quintas');
+    if (btnCirculo) btnCirculo.addEventListener('click', abrirModalCirculoQuintas);
+
+    const linkAdmin = document.getElementById('link-admin');
+    if (linkAdmin) linkAdmin.addEventListener('click', abrirAdminLogin);
+
+    const linkAdminBottom = document.getElementById('link-admin-bottom');
+    if (linkAdminBottom) linkAdminBottom.addEventListener('click', abrirAdminLogin);
+
+    const btnNueva = document.getElementById('btn-nueva-cancion');
+    if (btnNueva) btnNueva.addEventListener('click', abrirModalNuevaCancion);
+
+    const btnLoginBanda = document.getElementById('btn-login-banda');
+    if (btnLoginBanda) btnLoginBanda.addEventListener('click', loginBanda);
+
+    // Gestionar todos los botones de cerrar que están dentro de modales de forma centralizada
+    document.querySelectorAll('.modal-fondo .btn-cerrar').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const modalFondo = btn.closest('.modal-fondo');
+            if (!modalFondo) return;
+            const id = modalFondo.id;
+            switch (id) {
+                case 'modal-circulo-quintas': cerrarModalCirculoQuintas(); break;
+                case 'modal-login-admin': cerrarAdminLogin(); break;
+                case 'vista-cancion': regresarALista(); break;
+                case 'modal-escala-cancion': cerrarModalEscalaCancion(); break;
+                case 'modal-nueva-cancion': cerrarModalNuevaCancion(); break;
+                case 'modal-editar-cancion': cerrarModalEditarCancion(); break;
+                case 'modal-eventos-especiales': cerrarModalEventosEspeciales(); break;
+                default:
+                    modalFondo.style.display = 'none';
+                    document.body.classList.remove('modal-abierto');
+            }
+        });
+    });
+
+    // Botones de vista dentro del modal de canción (tienen data-vista en HTML)
+    document.querySelectorAll('.btn-vista-cancion').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const vista = btn.dataset.vista;
+            if (vista) cambiarVistaCancion(vista);
+        });
+    });
+
+    // Botones de cambio de tono (tienen data-cambiar-tono)
+    document.querySelectorAll('[data-cambiar-tono]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const val = parseInt(btn.getAttribute('data-cambiar-tono'), 10);
+            if (!isNaN(val)) cambiarTono(val);
+        });
+    });
+
+    // Abrir modal de escala desde el badge de tono
+    const tonoActualBtn = document.getElementById('tono-actual');
+    if (tonoActualBtn) tonoActualBtn.addEventListener('click', abrirModalEscalaCancion);
+
+    // Formularios de nueva/editar canción: submit handlers
+    const formNueva = document.getElementById('form-nueva-cancion');
+    if (formNueva) formNueva.addEventListener('submit', guardarNuevaCancion);
+    const formEditar = document.getElementById('form-editar-cancion');
+    if (formEditar) formEditar.addEventListener('submit', guardarEditarCancion);
+
+    // Botón eliminar desde modal editar
+    const btnEliminar = document.getElementById('btn-eliminar-cancion');
+    if (btnEliminar) btnEliminar.addEventListener('click', confirmarEliminarCancionDesdeModal);
 });
 
 /* ==========================================================================
@@ -1430,6 +1502,35 @@ function mostrarToastEventos(mensaje, tipo) {
         toast.classList.remove('visible');
         setTimeout(() => toast.remove(), 350);
     }, 2500);
+}
+
+// Stub for loginBanda if not implemented yet (keeps backward compatibility with inline handlers)
+function loginBanda() {
+    // Placeholder: if Google login flow is not implemented, open admin login modal as fallback
+    console.warn('loginBanda() called but not implemented — opening admin login modal as fallback.');
+    abrirAdminLogin();
+}
+
+function confirmarEliminarCancionDesdeModal() {
+    if (!isAdmin()) { abrirAdminLogin(); return; }
+    if (!confirm('¿Confirmar eliminación de esta canción?')) return;
+    const id = editingOriginal && editingOriginal.id;
+    if (id !== undefined) {
+        const datos = { action: 'eliminar', id: id };
+        fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(datos) })
+        .then(()=> {
+            // Actualizar estado local
+            todasLasCanciones = todasLasCanciones.filter(c => c.id !== id);
+            localStorage.setItem('gdf_canciones', JSON.stringify(todasLasCanciones));
+            cerrarModalEditarCancion();
+            filtrarYMostrar();
+            alert('Canción eliminada (petición enviada).');
+        }).catch(()=> {
+            alert('Error al solicitar eliminación.');
+        });
+    } else {
+        alert('No se pudo identificar la canción para eliminar.');
+    }
 }
 
 /* Exponer funciones al objeto global window para asegurar compatibilidad total con eventos en HTML */
