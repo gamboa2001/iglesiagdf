@@ -20,28 +20,11 @@ const firebaseConfig = {
 let googleProvider = null;
 let cancionesRef = null;
 
-if (typeof firebase !== 'undefined') {
-  try {
-    if (!firebase.apps || firebase.apps.length === 0) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    // Firestore helper
-    const db = firebase.firestore();
-    cancionesRef = db.collection('canciones');
-
-    // Provider de Google
-    googleProvider = new firebase.auth.GoogleAuthProvider();
-
-    // Escuchar cambios de auth y actualizar UI
-    firebase.auth().onAuthStateChanged((user) => {
-      setAdmin(!!user);
-    });
-  } catch (e) {
-    console.warn('Error inicializando Firebase:', e);
-  }
-} else {
-  console.warn('Firebase SDK no encontrado. Asegúrate de cargar los scripts de Firebase antes de script.js');
-}
+// Inicialización de Firebase se hará en DOMContentLoaded para asegurar que el SDK ya esté cargado.
+// (Si prefieres inicializar antes, asegúrate de incluir los scripts de Firebase antes de script.js en el HTML.)
+// Provider global (se asigna cuando se inicializa en DOMContentLoaded)
+googleProvider = null;
+cancionesRef = null;
 
 let todasLasCanciones = [];
 let cancionesFiltradas = [];
@@ -1105,6 +1088,25 @@ window.addEventListener('touchend', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
     if (typeof actualizarUIAdmin === 'function') actualizarUIAdmin();
     if (typeof inicializarEventosEspeciales === 'function') inicializarEventosEspeciales();
+
+    // Inicializar Firebase aquí para evitar usar `firebase` antes de que el SDK esté listo
+    if (typeof firebase !== 'undefined') {
+        try {
+            if (!firebase.apps || firebase.apps.length === 0) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            const db = firebase.firestore();
+            cancionesRef = db.collection('canciones');
+            googleProvider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().onAuthStateChanged((user) => {
+                setAdmin(!!user);
+            });
+        } catch (e) {
+            console.warn('Error inicializando Firebase en DOMContentLoaded:', e);
+        }
+    } else {
+        console.warn('Firebase SDK no encontrado en DOMContentLoaded. Asegúrate de incluir los scripts de compat antes de script.js');
+    }
 
     // Añadir touchend a todos los botones interactivos para máxima compatibilidad móvil
     const touchMap = [
