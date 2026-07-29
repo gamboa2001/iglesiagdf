@@ -317,6 +317,34 @@
         </div>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Polyfill global handlers used inline in the HTML so modal close buttons work
+        function regresarALista(){
+            const modal = document.getElementById('vista-cancion');
+            if(modal) modal.style.display = 'none';
+            document.body.classList.remove('modal-abierto');
+        }
+        function cerrarModalCirculoQuintas(){
+            const m = document.getElementById('modal-circulo-quintas');
+            if(m) m.style.display = 'none';
+            document.body.classList.remove('modal-abierto');
+        }
+        function cerrarModalEscalaCancion(){
+            const m = document.getElementById('modal-escala-cancion');
+            if(m) m.style.display = 'none';
+            document.body.classList.remove('modal-abierto');
+        }
+        function cerrarModalNuevaCancion(){
+            const m = document.getElementById('modal-nueva-cancion');
+            if(m) m.style.display = 'none';
+            document.body.classList.remove('modal-abierto');
+        }
+        function cerrarModalEditarCancion(){
+            const m = document.getElementById('modal-editar-cancion');
+            if(m) m.style.display = 'none';
+            document.body.classList.remove('modal-abierto');
+        }
+    </script>
 </body>
 </html>
