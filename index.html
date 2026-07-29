@@ -21,10 +21,16 @@
                 <h1>GDF</h1>
             </div>
         </div>
-        <button id="link-admin" class="icon-button" type="button" onclick="abrirAdminLogin()">
-            <i class="fa-solid fa-user"></i>
-            Admin
-        </button>
+        <div class="top-bar-actions">
+            <button id="btn-circulo-quintas" class="icon-button" type="button" onclick="abrirModalCirculoQuintas()" aria-haspopup="dialog" aria-controls="modal-circulo-quintas" aria-expanded="false">
+                <i class="fa-solid fa-circle-notch"></i>
+                <span class="button-label">Quintas</span>
+            </button>
+            <button id="link-admin" class="icon-button" type="button" onclick="abrirAdminLogin()">
+                <i class="fa-solid fa-user"></i>
+                <span class="button-label">Admin</span>
+            </button>
+        </div>
     </header>
 
     <main class="page-shell">
@@ -74,6 +80,108 @@
             </div>
         </section>
     </main>
+
+    <div id="modal-circulo-quintas" class="modal-fondo" style="display: none;">
+        <div class="modal-contenido modal-circulo-quintas-card" role="dialog" aria-modal="true" aria-labelledby="circulo-quintas-title">
+            <button class="btn-cerrar" type="button" onclick="cerrarModalCirculoQuintas()">&times;</button>
+            <div class="circulo-quintas-header">
+                <div class="circulo-quintas-icon"><i class="fa-solid fa-circle-notch"></i></div>
+                <div>
+                    <h3 id="circulo-quintas-title">Círculo de quintas</h3>
+                    <p>Guía rápida para pasar entre tonalidades y encontrar la relación armónica.</p>
+                </div>
+            </div>
+            <div class="circulo-quintas-visual">
+                <table class="modos-table">
+                    <thead>
+                        <tr>
+                            <th>Modo</th>
+                            <th>1</th>
+                            <th>2</th>
+                            <th>3</th>
+                            <th>4</th>
+                            <th>5</th>
+                            <th>6</th>
+                            <th>7</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="modo-name">Jónico</td>
+                            <td>Do</td>
+                            <td>Re</td>
+                            <td>Mi</td>
+                            <td>Fa</td>
+                            <td>Sol</td>
+                            <td>La</td>
+                            <td>Si</td>
+                        </tr>
+                        <tr>
+                            <td class="modo-name">Dórico</td>
+                            <td>Re</td>
+                            <td>Mi</td>
+                            <td>Fa</td>
+                            <td>Sol</td>
+                            <td>La</td>
+                            <td>Si</td>
+                            <td>Do</td>
+                        </tr>
+                        <tr>
+                            <td class="modo-name">Frigio</td>
+                            <td>Mi</td>
+                            <td>Fa</td>
+                            <td>Sol</td>
+                            <td>La</td>
+                            <td>Si</td>
+                            <td>Do</td>
+                            <td>Re</td>
+                        </tr>
+                        <tr>
+                            <td class="modo-name">Lidio</td>
+                            <td>Fa</td>
+                            <td>Sol</td>
+                            <td>La</td>
+                            <td>Si</td>
+                            <td>Do</td>
+                            <td>Re</td>
+                            <td>Mi</td>
+                        </tr>
+                        <tr>
+                            <td class="modo-name">Mixolidio</td>
+                            <td>Sol</td>
+                            <td>La</td>
+                            <td>Si</td>
+                            <td>Do</td>
+                            <td>Re</td>
+                            <td>Mi</td>
+                            <td>Fa</td>
+                        </tr>
+                        <tr>
+                            <td class="modo-name">Eólico</td>
+                            <td>La</td>
+                            <td>Si</td>
+                            <td>Do</td>
+                            <td>Re</td>
+                            <td>Mi</td>
+                            <td>Fa</td>
+                            <td>Sol</td>
+                        </tr>
+                        <tr>
+                            <td class="modo-name">Locrio</td>
+                            <td>Si</td>
+                            <td>Do</td>
+                            <td>Re</td>
+                            <td>Mi</td>
+                            <td>Fa</td>
+                            <td>Sol</td>
+                            <td>La</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="circulo-quintas-help">Toca o pulsa fuera del panel para cerrar.</p>
+        </div>
+    </div>
 
     <nav class="bottom-nav" aria-label="Navegación inferior">
         <ul>
@@ -127,11 +235,41 @@
                 <span>Cambiar tono</span>
                 <div style="display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap: wrap;">
                     <button onclick="cambiarTono(-1)">- ½ Tono</button>
-                    <span id="tono-actual" class="badge-tono">C</span>
+                    <button id="tono-actual" class="badge-tono" type="button" onclick="abrirModalEscalaCancion()" style="cursor: pointer; border: none; padding: 10px 14px; background: rgba(0,122,255,0.14); border-radius: 999px; color: var(--azul-identidad); font-weight: 700; transition: all 250ms;">C</button>
                     <button onclick="cambiarTono(1)">+ ½ Tono</button>
                 </div>
             </div>
             <pre id="cancion-cuerpo"></pre>
+        </div>
+    </div>
+
+    <div id="modal-escala-cancion" class="modal-fondo" style="display: none;">
+        <div class="modal-contenido modal-circulo-quintas-card" role="dialog" aria-modal="true" aria-labelledby="escala-titulo">
+            <button class="btn-cerrar" type="button" onclick="cerrarModalEscalaCancion()">&times;</button>
+            <div class="circulo-quintas-header">
+                <div class="circulo-quintas-icon"><i class="fa-solid fa-music"></i></div>
+                <div>
+                    <h3 id="escala-titulo">Escala de <span id="escala-tono-nombre">Do</span></h3>
+                    <p id="escala-descripcion">Notas que puedes usar en esta tonalidad.</p>
+                </div>
+            </div>
+            <div class="circulo-quintas-visual">
+                <table class="modos-table" id="tabla-escala-cancion">
+                    <tbody>
+                        <tr>
+                            <td style="text-align: left; padding-left: 12px; font-weight: 700; color: var(--azul-identidad);">Notas</td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td>4</td>
+                            <td>5</td>
+                            <td>6</td>
+                            <td>7</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="circulo-quintas-help">Toca o pulsa fuera del panel para cerrar.</p>
         </div>
     </div>
 
@@ -149,6 +287,6 @@
         </div>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
