@@ -362,6 +362,120 @@
             if(m) m.style.display = 'none';
             document.body.classList.remove('modal-abierto');
         }
+        
+       // Vinculador evento listeners para cancionero
+       document.addEventListener('DOMContentLoaded', () => {
+           const btnLoginBanda = document.getElementById('btn-login-banda');
+           if (btnLoginBanda) {
+               btnLoginBanda.addEventListener('click', loginBanda);
+           }
+            
+           const btnCerrarAdmin = document.getElementById('modal-login-admin') && document.getElementById('modal-login-admin').querySelector('.btn-cerrar');
+           if (btnCerrarAdmin) {
+               btnCerrarAdmin.addEventListener('click', cerrarAdminLogin);
+           }
+            
+           const btnCerrarModalCirculoQuintas = document.getElementById('modal-circulo-quintas') && document.getElementById('modal-circulo-quintas').querySelector('.btn-cerrar');
+           if (btnCerrarModalCirculoQuintas) {
+               btnCerrarModalCirculoQuintas.addEventListener('click', cerrarModalCirculoQuintas);
+           }
+            
+           const btnCerrarEscala = document.getElementById('modal-escala-cancion') && document.getElementById('modal-escala-cancion').querySelector('.btn-cerrar');
+           if (btnCerrarEscala) {
+               btnCerrarEscala.addEventListener('click', cerrarModalEscalaCancion);
+           }
+            
+           const btnCerrarVistaCancion = document.getElementById('vista-cancion') && document.getElementById('vista-cancion').querySelector('.btn-cerrar');
+           if (btnCerrarVistaCancion) {
+               btnCerrarVistaCancion.addEventListener('click', regresarALista);
+           }
+            
+           const btnCerrarModalNuevaCancion = document.getElementById('modal-nueva-cancion') && document.getElementById('modal-nueva-cancion').querySelector('.btn-cerrar');
+           if (btnCerrarModalNuevaCancion) {
+               btnCerrarModalNuevaCancion.addEventListener('click', cerrarModalNuevaCancion);
+           }
+            
+           const btnCerrarModalEditarCancion = document.getElementById('modal-editar-cancion') && document.getElementById('modal-editar-cancion').querySelector('.btn-cerrar');
+           if (btnCerrarModalEditarCancion) {
+               btnCerrarModalEditarCancion.addEventListener('click', cerrarModalEditarCancion);
+           }
+            
+           const btnCerrarEventos = document.getElementById('modal-eventos-especiales') && document.getElementById('modal-eventos-especiales').querySelector('.btn-cerrar');
+           if (btnCerrarEventos) {
+               btnCerrarEventos.addEventListener('click', cerrarModalEventosEspeciales);
+           }
+            
+           const btnNuevaCancion = document.getElementById('btn-nueva-cancion');
+           if (btnNuevaCancion) {
+               btnNuevaCancion.addEventListener('click', abrirModalNuevaCancion);
+           }
+            
+           const btnGuardarNuevaCancion = document.getElementById('btn-guardar-nueva');
+           if (btnGuardarNuevaCancion) {
+               btnGuardarNuevaCancion.addEventListener('click', guardarNuevaCancion);
+           }
+            
+           const btnGuardarEditarCancion = document.getElementById('btn-guardar-editar');
+           if (btnGuardarEditarCancion) {
+               btnGuardarEditarCancion.addEventListener('click', guardarEditarCancion);
+           }
+            
+           const formNuevaCancion = document.getElementById('form-nueva-cancion');
+           if (formNuevaCancion) {
+               formNuevaCancion.addEventListener('submit', (e) => { e.preventDefault(); guardarNuevaCancion(); });
+           }
+            
+           const formEditarCancion = document.getElementById('form-editar-cancion');
+           if (formEditarCancion) {
+               formEditarCancion.addEventListener('submit', (e) => { e.preventDefault(); guardarEditarCancion(); });
+           }
+            
+           const btnCirculoQuintas = document.getElementById('btn-circulo-quintas');
+           if (btnCirculoQuintas) {
+               btnCirculoQuintas.addEventListener('click', abrirModalCirculoQuintas);
+           }
+            
+           const btnAdminCancionero = document.getElementById('link-admin');
+           if (btnAdminCancionero) {
+               btnAdminCancionero.addEventListener('click', abrirAdminLogin);
+           }
+            
+           const btnAdminBottom = document.getElementById('link-admin-bottom');
+           if (btnAdminBottom) {
+               btnAdminBottom.addEventListener('click', abrirAdminLogin);
+           }
+            
+           const buscador = document.getElementById('buscador');
+           if (buscador) {
+               buscador.addEventListener('input', filtrarCanciones);
+           }
+            
+           const eventosBuscador = document.getElementById('eventos-buscador');
+           if (eventosBuscador) {
+               eventosBuscador.addEventListener('input', buscarCancionesParaEvento);
+           }
+            
+           const btnVistasCancion = document.querySelectorAll('.btn-vista-cancion');
+           btnVistasCancion.forEach(btn => {
+               btn.addEventListener('click', (e) => {
+                   const vista = btn.getAttribute('data-vista');
+                   cambiarVistaCancion(vista);
+               });
+           });
+            
+           const btnsCambiarTono = document.querySelectorAll('[data-cambiar-tono]');
+           btnsCambiarTono.forEach(btn => {
+               btn.addEventListener('click', () => {
+                   const semitonos = parseInt(btn.getAttribute('data-cambiar-tono'));
+                   cambiarTono(semitonos);
+               });
+           });
+            
+           const btnTono = document.getElementById('tono-actual');
+           if (btnTono) {
+               btnTono.addEventListener('click', abrirModalEscalaCancion);
+           }
+       });
     </script>
 </body>
 </html>

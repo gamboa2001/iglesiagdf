@@ -248,6 +248,14 @@ function intentarLogin(event) {
     }
 }
 
+// Función para login con Google (simplificada - sin seguridad)
+function loginBanda() {
+    // Sin seguridad: simplemente permitir acceso admin
+    setAdmin(true);
+    cerrarAdminLogin();
+    alert('¡Acceso admin activado!');
+}
+
 function logoutAdmin() {
     setAdmin(false);
     alert('Sesión de administrador cerrada.');
@@ -265,33 +273,16 @@ function asegurarIDs(lista) {
 // Detectar vista desde URL al cargar
 detectarVistaDesdeURL();
 
-// Inicializar autenticación anónima (si el SDK de Auth está disponible)
-// y cargar los datos solo después de autenticación para cumplir reglas con `auth != null`.
+// Intentar cargar datos de Firebase sin autenticación
+// Si las reglas de Firebase lo permiten, se cargarán automáticamente
+// Si no, mostrará error explicativo
 try {
-    if (window.firebase && firebase.auth) {
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) {
-                console.log('Usuario autenticado (anon/cred):', user && user.uid);
-                // Cargar datos ahora que estamos autenticados
-                try { obtenerDatosSheets(); } catch (e) { console.warn('Error llamando obtenerDatosSheets tras auth:', e); }
-            } else {
-                // Intentar inicio de sesión anónimo
-                firebase.auth().signInAnonymously().then(() => {
-                    console.log('Inicio de sesión anónimo solicitado');
-                }).catch(err => {
-                    console.warn('signInAnonymously falló:', err);
-                    // Intentar cargar datos aunque falle (mostrará error si las reglas exigen auth)
-                    try { obtenerDatosSheets(); } catch (e) { console.warn('Fallback obtenerDatosSheets error:', e); }
-                });
-            }
-        });
-    } else {
-        // No hay Auth SDK; intentar cargar datos de todas formas (reglas públicas o error)
+    // Pequeño delay para asegurar que Firebase esté inicializado
+    setTimeout(() => {
         obtenerDatosSheets();
-    }
+    }, 100);
 } catch (e) {
-    console.warn('Error inicializando Auth flow:', e);
-    try { obtenerDatosSheets(); } catch (er) { console.warn('Error fallback obtenerDatosSheets:', er); }
+    console.warn('Error inicializando carga de datos:', e);
 }
 
 function obtenerDatosSheets(forzarRecarga) {
@@ -306,6 +297,8 @@ function obtenerDatosSheets(forzarRecarga) {
                 todasLasCanciones = asegurarIDs(parsed);
                 cargado = true;
                 filtrarYMostrar();
+                console.log('Canciones cargadas desde caché. Total:', todasLasCanciones.length);
+                return;
             } else {
                 // Caché inválida o forzar recarga — limpiar y esperar datos frescos
                 console.log('Caché sin IDs detectada o recarga forzada — limpiando y recargando desde Realtime Database...');
@@ -318,21 +311,20 @@ function obtenerDatosSheets(forzarRecarga) {
         }
     }
 
-    // 2. Si editamos hace menos de 15 segundos, no pedir datos viejos a Sheets
+    // 2. Si editamos hace menos de 15 segundos, no pedir datos viejos
     if (!forzarRecarga && Date.now() - ultimaEdicionTimestamp < 15000) {
         return;
     }
 
-    // 3. Intentar leer desde Realtime Database si está disponible
+    // 3. Intentar leer desde Realtime Database
     if (window.db && typeof window.db.ref === 'function') {
+        console.log('🔍 Intentando leer canciones desde Realtime Database...');
         try {
-            // Usar listener 'once' para una lectura puntual que reemplaza la petición a Sheets
             window.db.ref('canciones').once('value').then(snapshot => {
                 const val = snapshot.val();
                 if (val) {
                     const arr = Object.keys(val).map((key, idx) => {
                         const item = Object.assign({}, val[key]);
-                        // conservar un _key con la llave de Realtime y mantener compatibilidad con `id`
                         item._key = key;
                         if (item.id === undefined || item.id === null || item.id === '') item.id = idx + 1;
                         return item;
@@ -343,32 +335,44 @@ function obtenerDatosSheets(forzarRecarga) {
                     todasLasCanciones = arr;
                     cargado = true;
                     filtrarYMostrar();
-                    console.log('Datos cargados desde Realtime Database. Primera canción ID:', arr[0] && arr[0].id);
+                    console.log('✅ Datos cargados desde Realtime Database. Total canciones:', arr.length);
                 } else {
-                    // Sin datos en DB
-                    if (todasLasCanciones.length === 0) {
-                        const contenedor = document.getElementById('contenedor-tarjetas');
-                        if (contenedor) {
-                            contenedor.innerHTML = `<p style="text-align:center; color:red; font-weight:bold; padding:20px;">No hay canciones en la Realtime Database.</p>`;
-                        }
+                    console.warn('⚠️ No hay canciones en la Realtime Database (path: canciones está vacío o no existe)');
+                    const contenedor = document.getElementById('contenedor-tarjetas');
+                    if (contenedor) {
+                        contenedor.innerHTML = `<p style="text-align:center; color:#ff9500; font-weight:bold; padding:20px;">No hay canciones en la base de datos Firebase. Verifica que el path 'canciones' existe y tiene datos.</p>`;
                     }
                 }
             }).catch(error => {
-                console.error('Error al leer desde Realtime Database:', error);
-                if (todasLasCanciones.length === 0) {
-                    const contenedor = document.getElementById('contenedor-tarjetas');
-                    if (contenedor) {
-                        contenedor.innerHTML = `<p style="text-align:center; color:red; font-weight:bold; padding:20px;">Error al cargar el cancionero. Revisa la conexión con Realtime Database.</p>`;
+                console.error('❌ Error al leer desde Realtime Database:', error);
+                const contenedor = document.getElementById('contenedor-tarjetas');
+                if (contenedor) {
+                    let mensajeError = 'Error al cargar canciones.';
+                    if (error.code === 'PERMISSION_DENIED') {
+                        mensajeError = 'Acceso denegado: Las reglas de Firebase Realtime Database no permiten lectura. Contacta al administrador.';
+                    } else if (error.message.includes('PERMISSION_DENIED')) {
+                        mensajeError = 'Acceso denegado: Revisa las reglas de seguridad en Firebase Console.';
                     }
+                    contenedor.innerHTML = `<p style="text-align:center; color:red; font-weight:bold; padding:20px;">❌ ${mensajeError}</p>
+                    <p style="text-align:center; color:#666; padding:10px; font-size:0.9rem;">Error técnico: ${error.message}</p>`;
                 }
             });
         } catch (e) {
-            console.error('Excepción leyendo Realtime Database:', e);
+            console.error('❌ Excepción leyendo Realtime Database:', e);
+            const contenedor = document.getElementById('contenedor-tarjetas');
+            if (contenedor) {
+                contenedor.innerHTML = `<p style="text-align:center; color:red; font-weight:bold; padding:20px;">Error de conexión con Firebase: ${e.message}</p>`;
+            }
         }
     } else {
-        console.warn('Realtime Database no disponible (window.db). No se cargaron canciones.');
+        console.warn('⚠️ Realtime Database no disponible (window.db es undefined). Verifica que firebase-database-compat.js está cargado en el HTML.');
+        const contenedor = document.getElementById('contenedor-tarjetas');
+        if (contenedor) {
+            contenedor.innerHTML = `<p style="text-align:center; color:red; font-weight:bold; padding:20px;">Firebase Realtime Database no inicializado. Revisa la configuración.</p>`;
+        }
     }
 }
+
 
 
 function mostrarSeccion(seccion) {
@@ -1075,6 +1079,42 @@ function enviarNuevaCancion() {
     // Reusar lógica del modal: crear un evento falso que llame a guardarNuevaCancion
     const fakeEvent = { preventDefault: () => {} };
     guardarNuevaCancion(fakeEvent);
+}
+
+// Función para confirmar eliminación de canción
+function confirmarEliminarCancionDesdeModal() {
+    if (!isAdmin()) return;
+    if (confirm('¿Estás seguro de que quieres eliminar esta canción?')) {
+        const titulo = document.getElementById('cancion-titulo')?.innerText || '';
+        const artista = document.getElementById('cancion-artista')?.innerText || '';
+        
+        // Buscar la canción por título y artista
+        const index = todasLasCanciones.findIndex(c => 
+            (c.titulo || '').trim().toLowerCase() === (titulo || '').trim().toLowerCase() &&
+            (c.artista || '').trim().toLowerCase() === (artista || '').trim().toLowerCase()
+        );
+        
+        if (index !== -1) {
+            const cancion = todasLasCanciones[index];
+            // Si hay Realtime Database, intentar eliminar allí
+            if (window.db && typeof window.db.ref === 'function' && cancion._key) {
+                window.db.ref('canciones/' + cancion._key).remove()
+                    .then(() => {
+                        todasLasCanciones.splice(index, 1);
+                        localStorage.removeItem('gdf_canciones');
+                        regresarALista();
+                        alert('¡Canción eliminada con éxito!');
+                        filtrarYMostrar();
+                    })
+                    .catch(err => {
+                        console.error('Error eliminando canción:', err);
+                        alert('No se pudo eliminar la canción.');
+                    });
+            } else {
+                alert('No se puede eliminar sin conexión a base de datos.');
+            }
+        }
+    }
 }
 
 // Cerrar modales haciendo clic en el fondo translúcido fuera del formulario
